@@ -1,19 +1,18 @@
 import torch
-from torch._C import device
 from torch.utils.data import DataLoader, TensorDataset
 import time
 from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
-from torch.utils.data import dataloader
 import torchsummary
 from collections import OrderedDict
-from .callbacks import *
 from enum import Enum
 
 class Events(Enum):
     ON_EPOCH_END = 'on_epoch_end'
     ON_EPOCH_START = 'on_epoch_start'
+    ON_TRAIN_START = 'on_train_start'
+    ON_TRAIN_END = 'on_train_end'
 
 class _Trainer(object):
     def __init__(self, **kwargs) -> None:
@@ -35,6 +34,7 @@ class _Trainer(object):
         self.max_epochs = max_epochs
         self.logger.verbose = verbose
         self.logger.on_train_start(train_loader, val_loader)
+        self.__fire_event(Events.ON_TRAIN_START)
 
         for epoch in range(1, max_epochs+1):
             self.epoch = epoch
@@ -52,6 +52,7 @@ class _Trainer(object):
             self.logger.on_epoch_end(epoch=epoch, max_epochs=max_epochs, train_metrics=train_metrics, val_metrics=val_metrics)
             self.__fire_event(Events.ON_EPOCH_END)
 
+        self.__fire_event(Events.ON_TRAIN_END)
         return self.logger.history
 
     def train_precise_mode(self, data_loader):
@@ -200,7 +201,7 @@ class Model(torch.nn.Module):
     def fit(self, x, y, epochs, batch_size=32,
                 validation_split=None, shuffle_val_split=False,
                 validation_data=None,
-                callbacks={}, 
+                callbacks={},
                 verbose=1,
                 precise_mode=False,
                 ):
