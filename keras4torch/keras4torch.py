@@ -5,6 +5,7 @@ import time
 from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
+from torch.utils.data import dataloader
 import torchsummary
 from collections import OrderedDict
 from .callbacks import *
@@ -30,7 +31,7 @@ class _Trainer(object):
         for func in func_list:
             func(self)
 
-    def run(self, train_loader, val_loader, max_epochs, verbose):
+    def run(self, train_loader, val_loader, max_epochs, verbose, precise_mode):
         self.max_epochs = max_epochs
         self.logger.verbose = verbose
         self.logger.on_train_start(train_loader, val_loader)
@@ -40,46 +41,67 @@ class _Trainer(object):
             self.logger.on_epoch_start()
             self.__fire_event(Events.ON_EPOCH_START)
 
-            for x_batch, y_batch in train_loader:
-                self.train_step(x_batch, y_batch)
+            if precise_mode:
+                self.train_precise_mode(train_loader)
+                train_metrics = self.evaluate(train_loader) 
+            else:
+                train_metrics = self.train_fast_mode(train_loader)
 
-            train_metrics = self.evaluate(train_loader)
             val_metrics = self.evaluate(val_loader) if val_loader else {}
 
             self.logger.on_epoch_end(epoch=epoch, max_epochs=max_epochs, train_metrics=train_metrics, val_metrics=val_metrics)
             self.__fire_event(Events.ON_EPOCH_END)
 
         return self.logger.history
-            
-    def train_step(self, x, y):
-        x = x.to(device=self.device)
-        y = y.to(device=self.device)
-        self.model.train()    # Sets the model in training mode
-        self.optimizer.zero_grad()
 
-        # forward + backward + optimize
-        y_pred = self.model.forward(x)
-        loss = self.loss(y_pred, y)
-        loss.backward()
-        self.optimizer.step()
-        return None
+    def train_precise_mode(self, data_loader):
+        self.model.train()
+        for x_batch, y_batch in data_loader:
+            x = x_batch.to(device=self.device)
+            y = y_batch.to(device=self.device)
+            self.optimizer.zero_grad()
+            y_pred = self.model.forward(x)
+            loss = self.loss(y_pred, y)
+            loss.backward()
+            self.optimizer.step()
 
-    @torch.no_grad()
-    def evaluate_step(self, x, y):
-        x = x.to(device=self.device)
-        y = y.to(device=self.device)
-        m = torch.zeros(size=[len(self.metrics)])
-        self.model.eval()
-        y_pred = self.model.forward(x)
-        for i, score_func in enumerate(self.metrics.values()):
-            m[i] = score_func(y_pred, y)
-        return m
+    def train_fast_mode(self, data_loader):
+        self.model.train()
+        score_funcs = list(self.metrics.values())[1:]
+        metrics = []
+        for x_batch, y_batch in data_loader:
+            x = x_batch.to(device=self.device)
+            y = y_batch.to(device=self.device)
+            self.optimizer.zero_grad()
+            y_pred = self.model.forward(x)
+            loss = self.loss(y_pred, y)
+            loss.backward()
+            self.optimizer.step()
+
+            with torch.no_grad():
+                batch_metrics = [loss]
+                for score_fn in score_funcs:
+                    batch_metrics.append(score_fn(y_pred, y))
+                metrics.append(torch.tensor(batch_metrics))
+
+        metrics = torch.stack(metrics).mean(dim=0).cpu().numpy()
+        return OrderedDict({k:v for k,v in zip(self.metrics.keys(), metrics)})
 
     @torch.no_grad()
     def evaluate(self, data_loader):
+        self.model.eval()
+        score_funcs = list(self.metrics.values())
         metrics = []
         for x_batch, y_batch in data_loader:
-            metrics.append(self.evaluate_step(x_batch, y_batch))
+            x = x_batch.to(device=self.device)
+            y = y_batch.to(device=self.device)
+            y_pred = self.model.forward(x)
+
+            batch_metrics = []
+            for score_fn in score_funcs:
+                batch_metrics.append(score_fn(y_pred, y))
+            metrics.append(torch.tensor(batch_metrics))
+
         metrics = torch.stack(metrics).mean(dim=0).cpu().numpy()
         return OrderedDict({k:v for k,v in zip(self.metrics.keys(), metrics)})
 
@@ -158,7 +180,7 @@ class Model(torch.nn.Module):
         return rt[0] if len(rt) == 1 else tuple(rt)
 
     def get_params_cnt(self):
-        return sum([p.numel() for p in self.model.parameters()])
+        return sum([p.numel() for p in self.parameters()])
 
     ########## keras-like methods below ##########
 
@@ -179,7 +201,8 @@ class Model(torch.nn.Module):
                 validation_split=None, shuffle_val_split=False,
                 validation_data=None,
                 callbacks={}, 
-                verbose=1
+                verbose=1,
+                precise_mode=False,
                 ):
 
         assert self.compiled
@@ -200,7 +223,7 @@ class Model(torch.nn.Module):
 
         # Training
         self.trainer.register_callbacks(callbacks)
-        history = self.trainer.run(train_loader, val_loader, max_epochs=epochs, verbose=verbose)
+        history = self.trainer.run(train_loader, val_loader, max_epochs=epochs, verbose=verbose, precise_mode=precise_mode)
 
         return history
 
@@ -218,10 +241,10 @@ class Model(torch.nn.Module):
 
         inputs = self.to_tensor(inputs)
         outputs = []
-        self.model.eval()
+        self.eval()
 
         data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False)
         for x_batch in data_loader:
-            outputs.append(self.model.forward(x_batch[0].to(device=device)))
+            outputs.append(self.forward(x_batch[0].to(device=device)))
 
         return torch.cat(outputs, dim=0).cpu().numpy()
