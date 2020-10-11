@@ -4,15 +4,16 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="keras4torch-YOUR-USERNAME-HERE", # Replace with your own username
-    version="0.0.1",
-    author="Example Author",
-    author_email="author@example.com",
-    description="A small example package",
+    name="keras4torch",
+    version="0.1.1",
+    author="keras4torch development team",
+    author_email="blueloveTH@foxmail.com",
+    description="A test package",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
-    packages=setuptools.find_packages(),
+    url="https://github.com/blueloveTH/keras4torch",
+    packages=setuptools.find_packages('keras4torch'),
+    install_requires=['torch-summary==1.4.3'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
