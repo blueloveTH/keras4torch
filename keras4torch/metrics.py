@@ -24,23 +24,37 @@ class Accuracy(Metric):
         return 'acc'
 
 class BinaryAccuracy(Metric):
-    def __init__(self) -> None:
+    def __init__(self, activation=torch.sigmoid) -> None:
         super(BinaryAccuracy, self).__init__()
+        if activation == None:
+            activation = lambda x: x
+        self.activation = activation
 
     def __call__(self, y_pred, y_true):
-        right_cnt = (torch.round(y_pred) == y_true).sum()
+        right_cnt = (torch.round(self.activation(y_pred)) == y_true).sum()
         return right_cnt * 1.0 / y_true.shape[0]
 
     def get_abbr(self) -> str:
         return 'acc'
 
 class ROC_AUC(Metric):
-    def __init__(self) -> None:
+    def __init__(self, activation=torch.sigmoid) -> None:
         super(ROC_AUC, self).__init__()
-        raise NotImplementedError()
+        if activation == None:
+            activation = lambda x: x
+        self.activation = activation
+
+        try:
+            from sklearn.metrics import roc_auc_score
+        except ImportError:
+            raise RuntimeError("This metric requires sklearn to be installed.")
+
+        self.score_fn = roc_auc_score
 
     def __call__(self, y_pred, y_true):
-        pass
+        y_true = y_true.cpu().numpy()
+        y_pred = y_pred.cpu().numpy()
+        return torch.FloatTensor(self.score_fn(y_true, y_pred))
 
     def get_abbr(self) -> str:
         return 'auc'
