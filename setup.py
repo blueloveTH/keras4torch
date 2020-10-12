@@ -5,14 +5,14 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="keras4torch",
-    version="0.1.2",
+    version="0.2.0",
     author="keras4torch Development Team",
     author_email="blueloveTH@foxmail.com",
     description="A keras-like high level API for PyTorch",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/blueloveTH/keras4torch",
-    packages=setuptools.find_packages('keras4torch'),
+    packages=setuptools.find_packages(),
     install_requires=['torch-summary==1.4.3', 'pandas', 'numpy'],
     classifiers=[
         "Programming Language :: Python :: 3",
