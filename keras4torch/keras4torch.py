@@ -6,13 +6,7 @@ import numpy as np
 import pandas as pd
 import torchsummary
 from collections import OrderedDict
-from enum import Enum
-
-class Events(Enum):
-    ON_EPOCH_END = 'on_epoch_end'
-    ON_EPOCH_START = 'on_epoch_start'
-    ON_TRAIN_START = 'on_train_start'
-    ON_TRAIN_END = 'on_train_end'
+from .callbacks import Events
 
 class _Trainer(object):
     def __init__(self, **kwargs) -> None:
@@ -22,8 +16,12 @@ class _Trainer(object):
     
     def register_callbacks(self, callbacks):
         self.event_dict = {Events(k).value: list() for k in Events}
-        for key, func in callbacks.items():
-            self.event_dict[Events(key).value] += [func]
+
+        if not isinstance(callbacks, list):
+            callbacks = [callbacks]
+        for c in callbacks:
+            for key, func in c.get_callbacks_dict().items():
+                self.event_dict[Events(key).value] += [func]
     
     def __fire_event(self, key):
         func_list = self.event_dict[Events(key).value]
@@ -33,13 +31,13 @@ class _Trainer(object):
     def run(self, train_loader, val_loader, max_epochs, verbose, precise_mode):
         self.max_epochs = max_epochs
         self.logger.verbose = verbose
-        self.logger.on_train_start(train_loader, val_loader)
-        self.__fire_event(Events.ON_TRAIN_START)
+        self.logger.on_train_begin(train_loader, val_loader)
+        self.__fire_event(Events.ON_TRAIN_BEGIN)
 
         for epoch in range(1, max_epochs+1):
             self.epoch = epoch
-            self.logger.on_epoch_start()
-            self.__fire_event(Events.ON_EPOCH_START)
+            self.logger.on_epoch_begin()
+            self.__fire_event(Events.ON_EPOCH_BEGIN)
 
             if precise_mode:
                 self.train_precise_mode(train_loader)
@@ -111,13 +109,13 @@ class _Logger(object):
         self.trainer = trainer
         self.verbose = 0
 
-    def on_train_start(self, train_loader, val_loader):
+    def on_train_begin(self, train_loader, val_loader):
         if val_loader != None:
             print(f'Train on {len(train_loader.dataset)} samples, validate on {len(val_loader.dataset)} samples:')
         else:
             print(f'Train on {len(train_loader.dataset)} samples:')
 
-    def on_epoch_start(self, **kwargs):
+    def on_epoch_begin(self, **kwargs):
         self.time = time.time()
 
     def on_epoch_end(self, **kwargs):
@@ -201,7 +199,7 @@ class Model(torch.nn.Module):
     def fit(self, x, y, epochs, batch_size=32,
                 validation_split=None, shuffle_val_split=False,
                 validation_data=None,
-                callbacks={},
+                callbacks=[],
                 verbose=1,
                 precise_mode=False,
                 ):
