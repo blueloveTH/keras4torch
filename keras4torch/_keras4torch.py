@@ -1,10 +1,10 @@
 import torch
 from torch.utils.data import DataLoader, TensorDataset
-from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
 import torchsummary
 from collections import OrderedDict
+from torch.utils.data import random_split
 
 from ._training import Trainer
 
@@ -51,7 +51,7 @@ class Model(torch.nn.Module):
 
 
     def fit(self, x, y, epochs, batch_size=32,
-                validation_split=None, shuffle_val_split=False,
+                validation_split=None, val_split_seed=None,
                 validation_data=None,
                 callbacks=[],
                 verbose=1,
@@ -64,15 +64,22 @@ class Model(torch.nn.Module):
         assert not (validation_data != None and validation_split != None)
         has_val = validation_data != None or validation_split != None
 
-        if validation_split != None:
-            x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=validation_split, shuffle=shuffle_val_split)
-        else:
-            x_train = x; y_train = y
-            if validation_data != None:
-                x_val, y_val = self.to_tensor(validation_data[0], validation_data[1])
+        train_set = TensorDataset(x, y)
+    
+        if validation_data != None:
+            x_val, y_val = self.to_tensor(validation_data[0], validation_data[1])
+            val_set = TensorDataset(x_val, y_val)
 
-        train_loader = DataLoader(TensorDataset(x_train, y_train), batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(TensorDataset(x_val, y_val), batch_size=batch_size, shuffle=False) if has_val else None
+        if validation_split != None:
+            val_length = int(len(train_set) * validation_split)
+            train_length = len(train_set) - val_length
+            if val_split_seed != None:
+                train_set, val_set = random_split(train_set, [train_length, val_length], generator=torch.Generator().manual_seed(val_split_seed))
+            else:
+                train_set, val_set = random_split(train_set, [train_length, val_length])
+
+        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False) if has_val else None
 
         # Training
         self.trainer.register_callbacks(callbacks)
