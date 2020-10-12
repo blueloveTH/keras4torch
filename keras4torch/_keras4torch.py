@@ -8,6 +8,7 @@ from torch.utils.data import random_split
 
 from ._training import Trainer
 
+__version__ = '0.1.2'
 
 class Model(torch.nn.Module):
     def __init__(self, model):
