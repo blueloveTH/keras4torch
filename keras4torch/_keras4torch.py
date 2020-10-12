@@ -7,8 +7,12 @@ from collections import OrderedDict
 from torch.utils.data import random_split
 
 from ._training import Trainer
+from .metrics import Metric
+from .metrics import create_metric_by_name
+from .losses import create_loss_by_name
+from .optimizers import create_optimizer_by_name
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 class Model(torch.nn.Module):
     def __init__(self, model):
@@ -41,10 +45,29 @@ class Model(torch.nn.Module):
     def summary(self, input_shape, depth=3, verbose=1):
         torchsummary.summary(self.model, input_shape, depth=depth, verbose=verbose)
 
-    def compile(self, optimizer, loss, device=None, metrics={}):
+    def compile(self, optimizer, loss, device=None, metrics=None):
         self.compiled = True
+        if isinstance(loss, str):
+            loss = create_loss_by_name(loss)
+        if isinstance(optimizer, str):
+            optimizer = create_optimizer_by_name(optimizer, self.parameters())
+
         m = OrderedDict({'loss': loss})
-        m.update(metrics)
+        if isinstance(metrics, dict):
+            m.update(metrics)
+        elif isinstance(metrics, list):
+            for tmp_m in metrics:
+                if isinstance(tmp_m, str):
+                    tmp_m = create_metric_by_name(tmp_m)
+                if isinstance(tmp_m, Metric):
+                    m[tmp_m.get_abbr()] = tmp_m
+                elif hasattr(tmp_m, '__call__'):
+                    m[tmp_m.__name__] = tmp_m
+                else:
+                    raise TypeError('Unsupported type.')
+        else:
+            raise TypeError('Argument `metrics` should be either a dict or list.')
+
         if device == None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.to(device=device)

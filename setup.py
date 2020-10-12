@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="keras4torch",
-    version="0.2.0",
+    version="0.2.1",
     author="keras4torch Development Team",
     author_email="blueloveTH@foxmail.com",
     description="A keras-like high level API for PyTorch",
