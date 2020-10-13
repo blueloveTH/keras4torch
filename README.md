@@ -23,7 +23,7 @@ $ conda install -c conda-forge keras4torch
 
 The usage of Keras4Torch is almost the same with Keras.
 
-[![Open in Colab](docs/colab-badge.svg)](http://xxx)Let's start with a simple example with MNIST!
+Let's start with a simple example with MNIST!
 
 ```python
 import torch
@@ -41,10 +41,8 @@ X, y = mnist.train_data, mnist.train_labels
 
 X = X.float() / 255.0
 
-x_train = X[:40000]
-y_train = y[:40000]
-x_test = X[40000:]
-y_test = y[40000:]
+x_train = X[:40000]; y_train = y[:40000]
+x_test = X[40000:]; y_test = y[40000:]
 ```
 
 #### (2) Define the Model
@@ -81,9 +79,13 @@ history = model.fit(x_train, y_train,
 ```
 
 Train on 32000 samples, validate on 8000 samples:
+
 Epoch 1/30 - 0.7s - loss: 0.7440 - acc: 0.8149 - val_loss: 0.3069 - val_acc: 0.9114 - lr: 1e-03
+
 Epoch 2/30 - 0.5s - loss: 0.2650 - acc: 0.9241 - val_loss: 0.2378 - val_acc: 0.9331 - lr: 1e-03
+
 Epoch 3/30 - 0.5s - loss: 0.1946 - acc: 0.9435 - val_loss: 0.1940 - val_acc: 0.9431 - lr: 1e-03
+
 ... ...
 
 #### (5) Plot Learning Curve
