@@ -1,13 +1,13 @@
 # Keras4Torch
 
-A High-Level Keras-Style API for PyTorch
+A Lightweight Keras API for Training PyTorch Models
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
 [![GitHub license](docs/license-MIT-blue.svg)](https://github.com/blueloveTH/keras4torch)
 
 ## Installation
 
-Keras4Torch is available at [the Python Package Index](https://pypi.org/project/optuna/) and on [Anaconda Cloud](https://anaconda.org/conda-forge/optuna).
+Keras4Torch is available at the [Python Package Index](https://pypi.org/project/keras4torch/) and on [Anaconda Cloud](https://anaconda.org/conda-forge/keras4torch).
 
 ```bash
 # PyPI
@@ -23,7 +23,7 @@ $ conda install -c conda-forge keras4torch
 
 The usage of Keras4Torch is almost the same with Keras.
 
-Let's start with a simple example with MNIST!
+Let's start with a simple example of MNIST!
 
 ```python
 import torch
@@ -39,7 +39,7 @@ import keras4torch
 mnist = torchvision.datasets.MNIST(root='./', download=True)
 X, y = mnist.train_data, mnist.train_labels
 
-X = X.float() / 255.0	# scale the pixels to [0, 1]
+X = X.float() / 255.0    # scale the pixels to [0, 1]
 
 x_train = X[:40000]; y_train = y[:40000]
 x_test = X[40000:]; y_test = y[40000:]
@@ -54,12 +54,8 @@ model = torch.nn.Sequential(
     nn.Linear(512, 128), nn.ReLU(),
     nn.Linear(128, 10)
 )
-```
 
-#### (3) Wrap the Model
-
-```python
-model = keras4torch.Model(model)
+model = keras4torch.Model(model)    # attention this line
 ```
 
 #### (3) Compile Loss and Metric
@@ -87,8 +83,6 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 ... ...
 ```
 
-
-
 #### (5) Plot Learning Curve
 
 ```
@@ -109,6 +103,20 @@ OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
 
 
 
+## Feature Support
+
+|                 | keras4torch | torchkeras | tf.keras |
+| --------------- | ----------- | ---------- | -------- |
+| callbacks       | √           | x          | √        |
+| metrics         | √           | √          | √        |
+| numpy dataset   | √           | x          | √        |
+| GPU support     | √           | √          | √        |
+| shape inference | x           | x          | √        |
+| functional API  | x           | x          | √        |
+| multi-input     | x           | x          | √        |
+
+
+
 ## Communication
 
 - [GitHub Issues] for bug reports, feature requests and questions.
@@ -116,6 +124,8 @@ OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
 
 [GitHub issues]: https://github.com/blueloveTH/keras4torch/issues
 [QQ Group]: https://xxx
+
+
 
 
 ## Contribution

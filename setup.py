@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.3.0",
     author="Keras4Torch Development Team",
     author_email="blueloveTH@foxmail.com",
-    description="A High-Level Keras-Style API for PyTorch",
+    description="A Lightweight Keras API for Training PyTorch Models",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/blueloveTH/keras4torch",
