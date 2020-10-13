@@ -1,10 +1,20 @@
 from collections import OrderedDict
-from .callbacks import Events
 import torch
 import time
 import numpy as np
 import pandas as pd
+from enum import Enum
 
+class Events(Enum):
+    ON_EPOCH_END = 'on_epoch_end'
+    ON_EPOCH_BEGIN = 'on_epoch_begin'
+    ON_TRAIN_BEGIN = 'on_train_begin'
+    ON_TRAIN_END = 'on_train_end'
+
+
+class StopTrainingError(Exception):
+    def __init__(self):
+        pass
 
 class Trainer(object):
     def __init__(self, **kwargs) -> None:
@@ -46,7 +56,11 @@ class Trainer(object):
             val_metrics = self.evaluate(val_loader) if val_loader else {}
 
             self.logger.on_epoch_end(epoch=epoch, max_epochs=max_epochs, train_metrics=train_metrics, val_metrics=val_metrics)
-            self.__fire_event(Events.ON_EPOCH_END)
+
+            try:
+                self.__fire_event(Events.ON_EPOCH_END)
+            except StopTrainingError:
+                break
 
         self.__fire_event(Events.ON_TRAIN_END)
         return self.logger.history

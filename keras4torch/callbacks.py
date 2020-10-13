@@ -1,13 +1,6 @@
 from abc import abstractclassmethod
-from enum import Enum
-
-import torch
-
-class Events(Enum):
-    ON_EPOCH_END = 'on_epoch_end'
-    ON_EPOCH_BEGIN = 'on_epoch_begin'
-    ON_TRAIN_BEGIN = 'on_train_begin'
-    ON_TRAIN_END = 'on_train_end'
+from ._training import Trainer, StopTrainingError, Events
+import numpy as np
 
 class Callback():
     def __init__(self) -> None:
@@ -17,31 +10,107 @@ class Callback():
     def get_callbacks_dict(self):
         pass
 
+def guess_auto_mode(monitor, mode) -> str:
+    if mode != 'auto':
+        assert mode == 'max' or mode == 'min'
+        return mode
+    for s in ['loss', 'mse', 'mae', 'mape', 'error', 'err']:
+        if s in monitor:
+            return 'min'
+    return 'max'
 
 class ModelCheckpoint(Callback):
-    def __init__(self, filepath, monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='min'):
+    def __init__(self, filepath, monitor='val_loss', mode='auto', save_best_only=True, save_weights_only=True, verbose=1):
         super(ModelCheckpoint, self).__init__()
 
-        raise NotImplementedError()
+        if not (save_best_only and save_weights_only):
+            raise ValueError('`ModelCheckpoint` only supports `save_best_only=True` and `save_weights_only=True`.')
+
+        self.filepath = filepath
+        self.monitor = monitor
+        self.mode = guess_auto_mode(monitor, mode)
+        self.save_best_only = save_best_only
+        self.save_weights_only = save_weights_only
+        self.verbose = verbose
+
+        self.best_score = -np.inf if self.mode == 'max' else np.inf
+        
+    def is_better(self, curr_score):
+        if self.mode == 'max':
+            return curr_score > self.best_score
+        else:   # mode == 'min'
+            return curr_score < self.best_score
 
     def get_callbacks_dict(self):
         return {Events.ON_EPOCH_END: self.on_epoch_end}
 
-    def on_epoch_end(self, trainer):
-        pass
+    def on_epoch_end(self, trainer: Trainer):
+        if self.monitor not in trainer.logger.metrics:
+            raise KeyError(f'No such metric: {self.monitor}.')
+
+        curr_score = trainer.logger.metrics[self.monitor]
+        if self.is_better(curr_score):
+            self.best_score = curr_score
+            if self.verbose == 1:
+                print("[INFO] Model saved at '{}'. The best score is {:.4f}.".format(self.filepath, self.best_score))
+            trainer.model.save_weights(self.filepath)
 
 
 class EarlyStopping(Callback):
-    def __init__(self) -> None:
+    def __init__(self, monitor='val_loss', mode='auto', min_delta=0, patience=5, baseline=None, verbose=1) -> None:
         super(EarlyStopping, self).__init__()
 
-        raise NotImplementedError()
+        self.monitor = monitor
+        self.mode = guess_auto_mode(monitor, mode)
+        self.min_delta = min_delta
+        self.chances = self.patience = patience
+        self.baseline = baseline
+        self.verbose = verbose
+        self.baseline_flag = False
+
+        self.best_score = -np.inf if self.mode == 'max' else np.inf
+
+    def is_better(self, curr_score):
+        if self.mode == 'max':
+            return curr_score - self.best_score > self.min_delta
+        else:   # mode == 'min'
+            if self.baseline != None and curr_score > self.baseline:
+                return False
+            return self.best_score - curr_score > self.min_delta
+
+    def is_surpass_baseline(self, curr_score):
+        if self.baseline == None or self.baseline_flag:
+            return True
+        if self.mode == 'max' and curr_score > self.baseline:
+            self.baseline_flag = True
+            return True
+        if self.mode == 'min' and curr_score < self.baseline:
+            self.baseline_flag = True
+            return True
+        return False
 
     def get_callbacks_dict(self):
         return {Events.ON_EPOCH_END: self.on_epoch_end}
 
-    def on_epoch_end(self, trainer):
-        pass
+    def on_epoch_end(self, trainer: Trainer):
+        if self.monitor not in trainer.logger.metrics:
+            raise KeyError(f'No such metric: {self.monitor}.')
+
+        curr_score = trainer.logger.metrics[self.monitor]
+
+        if not self.is_surpass_baseline(curr_score):
+            return
+
+        if self.is_better(curr_score):
+            self.best_score = curr_score
+            self.chances = self.patience
+        else:
+            self.chances -= 1
+            if self.chances <= 0:
+                if self.verbose == 1:
+                    print('[INFO] Early Stopped. The best score is {:.4f}.'.format(self.best_score))
+                raise StopTrainingError
+
 
 
 
