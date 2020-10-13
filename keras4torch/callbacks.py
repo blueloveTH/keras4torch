@@ -20,7 +20,7 @@ def guess_auto_mode(monitor, mode) -> str:
     return 'max'
 
 class ModelCheckpoint(Callback):
-    def __init__(self, filepath, monitor='val_loss', mode='auto', save_best_only=True, save_weights_only=True, verbose=1):
+    def __init__(self, filepath, monitor='val_loss', mode='auto', save_best_only=True, save_weights_only=True, verbose=0):
         super(ModelCheckpoint, self).__init__()
 
         if not (save_best_only and save_weights_only):
