@@ -39,7 +39,7 @@ import keras4torch
 mnist = torchvision.datasets.MNIST(root='./', download=True)
 X, y = mnist.train_data, mnist.train_labels
 
-X = X.float() / 255.0
+X = X.float() / 255.0	# scale the pixels to [0, 1]
 
 x_train = X[:40000]; y_train = y[:40000]
 x_test = X[40000:]; y_test = y[40000:]
@@ -78,15 +78,16 @@ history = model.fit(x_train, y_train,
                 	)
 ```
 
+```txt
 Train on 32000 samples, validate on 8000 samples:
-
 Epoch 1/30 - 0.7s - loss: 0.7440 - acc: 0.8149 - val_loss: 0.3069 - val_acc: 0.9114 - lr: 1e-03
-
 Epoch 2/30 - 0.5s - loss: 0.2650 - acc: 0.9241 - val_loss: 0.2378 - val_acc: 0.9331 - lr: 1e-03
-
 Epoch 3/30 - 0.5s - loss: 0.1946 - acc: 0.9435 - val_loss: 0.1940 - val_acc: 0.9431 - lr: 1e-03
-
+Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9524 - lr: 1e-03
 ... ...
+```
+
+
 
 #### (5) Plot Learning Curve
 
@@ -102,7 +103,9 @@ history.plot(kind='line', y=['acc', 'val_acc'])
 model.evaluate(x_test, y_test)
 ```
 
+```txt
 OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
+```
 
 
 
