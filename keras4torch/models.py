@@ -12,7 +12,7 @@ from .metrics import create_metric_by_name
 from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 
 class Model(torch.nn.Module):
     """
@@ -46,7 +46,7 @@ class Model(torch.nn.Module):
         """Count the total number of scalars composing the weights."""
         return sum([p.numel() for p in self.parameters()])
 
-    ########## keras-like methods below ##########
+    ########## keras-style methods below ##########
 
     def summary(self, input_shape, depth=3):
         """Prints a string summary of the network."""
