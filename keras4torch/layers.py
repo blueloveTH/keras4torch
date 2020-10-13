@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Lambda(nn.Module):
+    """Wraps a function as `nn.Module`."""
     def __init__(self, fn):
         super(Lambda, self).__init__()
         self.lambda_func = fn
@@ -13,26 +14,26 @@ class Lambda(nn.Module):
 
 class SamePadding(nn.Module):
     """
-    Pads the output of a module to have the same shape as its input
+    Pads the output of a module to have the same shape as its input.
 
     Args:
 
-    * :attr:`module` (nn.Module): Target module, usually a convlutional one
+    * :attr:`module` (nn.Module): Target module, usually a convlutional one.
 
-    * :attr:`n_dims` (int): Number of dimensions to be pad, if `None` will be infered automatically
+    * :attr:`n_dims` (int): Number of dimensions to be pad, if `None` will be infered automatically.
 
-    Note:
-
-    If the convlution module has a `stride` > 1, the result may not be what you expect
-
-    Examples:
+    Usage:
     >>> conv2d = SamePadding(
-            nn.Conv2d(16, 32, 3)
-        )
+    ...     nn.Conv2d(16, 32, 3)
+    ... )
     >>> input = torch.randn(1, 16, 7, 5)
     >>> output = conv2d(input)
     >>> # The output shape will be equal to the input shape along last `n_dims`
     >>> print(input.shape, output.shape)
+
+    Note:
+
+    If the convlution module has a `stride` > 1, the result may not be what you expect.
     """
 
     dims_dict = {nn.Conv1d:1, nn.Conv2d:2, nn.Conv3d:3, nn.Linear:1}

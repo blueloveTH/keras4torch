@@ -1,3 +1,4 @@
+import numpy
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
@@ -15,6 +16,11 @@ from .optimizers import create_optimizer_by_name
 __version__ = '0.2.1'
 
 class Model(torch.nn.Module):
+    """
+    `Model` wraps a `nn.Module` with training and inference features.
+
+    Once the model is created, you can config the model with losses and metrics\n  with `model.compile()`, train the model with `model.fit()`, or use the model\n  to do prediction with `model.predict()`.
+    """
     def __init__(self, model):
         super(Model, self).__init__()
         self.model = model
@@ -37,15 +43,31 @@ class Model(torch.nn.Module):
                 
         return rt[0] if len(rt) == 1 else tuple(rt)
 
-    def get_params_cnt(self):
+    def count_params(self) -> int:
+        """Count the total number of scalars composing the weights."""
         return sum([p.numel() for p in self.parameters()])
 
     ########## keras-like methods below ##########
 
-    def summary(self, input_shape, depth=3, verbose=1):
-        torchsummary.summary(self.model, input_shape, depth=depth, verbose=verbose)
+    def summary(self, input_shape, depth=3):
+        """Prints a string summary of the network."""
+        torchsummary.summary(self.model, input_shape, depth=depth, verbose=1)
 
     def compile(self, optimizer, loss, device=None, metrics=None):
+        """
+        Configures the model for training.
+
+        Args:
+
+        * :attr:`optimizer`: String (name of optimizer) or optimizer instance.
+
+        * :attr:`loss`: String (name of objective function), objective function or loss instance.
+
+        * :attr:`metrics`: List of metrics to be evaluated by the model during training. You can also use dict to specify the 
+        abbreviation of each metric.
+
+        * :attr:`device`: Device the model will run on, if `None` it will use 'cuda' when `torch.cuda.is_available()` otherwise 'cpu'.
+        """
         self.compiled = True
         if isinstance(loss, str):
             loss = create_loss_by_name(loss)
@@ -81,6 +103,7 @@ class Model(torch.nn.Module):
                 verbose=1,
                 precise_mode=False,
                 ):
+        """Trains the model for a fixed number of epochs (iterations on a dataset)."""
 
         assert self.compiled
         x, y = self.to_tensor(x, y)
@@ -113,6 +136,7 @@ class Model(torch.nn.Module):
 
     @torch.no_grad()
     def evaluate(self, x, y, batch_size=32):
+        """Returns the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
         assert self.compiled
         x, y = self.to_tensor(x, y)
         val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False)
@@ -120,6 +144,7 @@ class Model(torch.nn.Module):
 
     @torch.no_grad()
     def predict(self, inputs, batch_size=32, device=None):
+        """Generates output predictions for the input samples.\n\n    Computation is done in batches."""
         if device == None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -132,3 +157,11 @@ class Model(torch.nn.Module):
             outputs.append(self.forward(x_batch[0].to(device=device)))
 
         return torch.cat(outputs, dim=0).cpu().numpy()
+
+    def save_weights(self, filepath):
+        """Equals to `torch.save(model.state_dict(), filepath)`."""
+        torch.save(self.state_dict(), filepath)
+
+    def load_weights(self, filepath):
+        """Equals to `model.load_state_dict(filepath)`."""
+        self.load_state_dict(filepath)

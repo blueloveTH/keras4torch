@@ -1,4 +1,3 @@
-import abc
 from abc import abstractclassmethod
 from enum import Enum
 
@@ -20,7 +19,7 @@ class Callback():
 
 
 class ModelCheckpoint(Callback):
-    def __init__(self) -> None:
+    def __init__(self, filepath, monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='min'):
         super(ModelCheckpoint, self).__init__()
 
         raise NotImplementedError()
