@@ -1,7 +1,5 @@
 # Keras4Torch
 
-#### "An Easy-to-Use Wrapper for Training PyTorch Models❤"
-
 #### “开箱即用”的PyTorch模型训练高级API
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
@@ -16,13 +14,13 @@
 pip install keras4torch
 ```
 
-Keras4Torch 支持 Python 3.6 及以上版本.
+Keras4Torch 支持 Python 3.6 及以上版本。
 
 
 
 ## 快速开始
 
-Let's start with a simple example of MNIST!
+作为示例，让我们开始编写一个MNIST手写数字识别的程序！
 
 ```python
 import torch
@@ -34,17 +32,25 @@ import keras4torch
 
 #### Step1: 数据预处理
 
+首先，从`torchvision.datasets`中加载MNIST数据集，并将每个像素点缩放到[0, 1]之间。
+
+其中前40000张图片作为训练集，后20000张图片作为测试集。
+
 ```python
 mnist = torchvision.datasets.MNIST(root='./', download=True)
 X, y = mnist.train_data, mnist.train_labels
 
-X = X.float() / 255.0    # 将像素缩放到 [0, 1]
+X = X.float() / 255.0
 
 x_train, y_train = X[:40000], y[:40000]
 x_test, y_test = X[40000:], y[40000:]
 ```
 
 #### Step2: 构建模型
+
+我们使用`torch.nn.Sequential`定义一个线性模型，由三层全连接组成，使用ReLU激活函数。
+
+接着，使用`keras4torch.Model`封装Sequential模型，以集成训练API。
 
 ```python
 model = torch.nn.Sequential(
@@ -54,16 +60,20 @@ model = torch.nn.Sequential(
     nn.Linear(128, 10)
 )
 
-model = keras4torch.Model(model)    # 封装torch模块以集成训练API
+model = keras4torch.Model(model)
 ```
 
 #### Step3: 设置优化器、损失函数和度量
+
+`model.compile()`函数可对模型进行必要的配置，参数既可以使用字符串，也可以使用`torch.nn`模块中提供的类实例。
 
 ```python
 model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
 ```
 
 #### Step4: 训练模型
+
+`model.fit()`是训练模型的方法，将以batch_size=512运行30轮次，指定80%数据用于训练集，剩余20%用作验证集。
 
 ```python
 history = model.fit(x_train, y_train,
@@ -84,6 +94,8 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 
 #### Step5: 打印学习曲线
 
+`model.fit()`方法在结束时，返回关于训练历史数据的`pandas.DataFrame`类型。
+
 ```
 history.plot(kind='line', y=['acc', 'val_acc'])
 ```
@@ -91,6 +103,8 @@ history.plot(kind='line', y=['acc', 'val_acc'])
 <img src="docs/learning_curve.svg"  />
 
 #### Step6: 在测试集上验证
+
+验证测试集上的损失和准确率。
 
 ```python
 model.evaluate(x_test, y_test)
@@ -107,7 +121,7 @@ OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
 如果您在使用中遇到问题，可通过如下方式获取支持：
 
 + 提交 [Github Issue](https://github.com/blueloveTH/keras4torch/issues) 
-+ 发送邮件给 blueloveTH@foxmail.com 或 zhangzhipengcs@foxmail.com.
++ 发送邮件至 blueloveTH@foxmail.com 或 zhangzhipengcs@foxmail.com
 
 
 
