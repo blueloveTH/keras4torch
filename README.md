@@ -1,12 +1,14 @@
 # Keras4Torch
 
-#### "A Easy To Use Pytorch API for Training PyTorch Models❤"
+#### "An Easy-to-Use Wrapper for Training PyTorch Models❤"
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
 [![pypi](https://img.shields.io/pypi/v/keras4torch.svg)](https://pypi.python.org/pypi/keras4torch)
 [![GitHub license](docs/license-MIT-blue.svg)](https://github.com/blueloveTH/keras4torch)
 
-Keras4Torch is a simple tool for training PyTorch model in a keras style. Keras4Torch provide a high-level feature: implementing model training with barely few lines of code.the core code of Keras4Torch are  `keras4torch.Model()`, `model.compile`,`model.fit()`,  `model.evaluate()` and `model.predict()`. If you are a keras enthusiast, Keras4Torch would be much perfect for you.
+Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. Once the model is wrapped, you can config the model with losses and metrics via `model.compile()`, train the model with `model.fit()`, or use the model to do prediction with `model.predict()`.
+
+If you are a Keras user, then most of your training code can work well in Keras4Torch with little change.
 
 ## Installation
 
@@ -102,6 +104,8 @@ OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
 
 ## Feature Support
 
+
+
 |                 | keras4torch | torchkeras | keras |
 | --------------- | ----------- | ---------- | ----- |
 | callbacks       | √           | x          | √     |
@@ -116,7 +120,7 @@ OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
 
 ## Communication
 
-If you have any problems using Keras4Torch, please open a [Github Issues](https://github.com/blueloveTH/keras4torch/issues) or send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
+If you have any problems using Keras4Torch, please open a [Github Issue](https://github.com/blueloveTH/keras4torch/issues) or send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
 
 We also welcome Pull Requests.
 
