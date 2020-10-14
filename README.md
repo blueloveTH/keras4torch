@@ -6,8 +6,6 @@
 [![pypi](https://img.shields.io/pypi/v/keras4torch.svg)](https://pypi.python.org/pypi/keras4torch)
 [![GitHub license](docs/license-MIT-blue.svg)](https://github.com/blueloveTH/keras4torch)
 
-Keras4Torch is a subset of Keras in PyTorch. You can use `keras4torch.Model` to wrap any `torch.nn.Module` and get the core training features of Keras by using `model.fit()`,  `model.evaluate()` and `model.predict()`. Most of the training code in Keras can work in Keras4Torch with little or no change.If you are a keras user, Keras4Torch would be much perfect for you.
-
 Keras4Torch is a simple tool for training PyTorch model in a keras style. Keras4Torch provide a high-level feature: implementing model training with barely few lines of code.the core code of Keras4Torch are  `keras4torch.Model()`, `model.compile`,`model.fit()`,  `model.evaluate()` and `model.predict()`. If you are a keras enthusiast, Keras4Torch would be much perfect for you.
 
 ## Installation
