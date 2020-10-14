@@ -1,14 +1,14 @@
 # Keras4Torch
 
-#### "A Lightweight Keras API for Training PyTorch Models❤"
+#### "A Easy To Use Pytorch API for Training PyTorch Models❤"
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
 [![pypi](https://img.shields.io/pypi/v/keras4torch.svg)](https://pypi.python.org/pypi/keras4torch)
 [![GitHub license](docs/license-MIT-blue.svg)](https://github.com/blueloveTH/keras4torch)
 
-Keras4Torch is a subset of Keras in PyTorch. You can use `keras4torch.Model` to wrap any `torch.nn.Module` and get the core training features of Keras by using `model.fit()`,  `model.evaluate()` and `model.predict()`. Most of the training code in Keras can work in Keras4Torch with little or no change.
+Keras4Torch is a subset of Keras in PyTorch. You can use `keras4torch.Model` to wrap any `torch.nn.Module` and get the core training features of Keras by using `model.fit()`,  `model.evaluate()` and `model.predict()`. Most of the training code in Keras can work in Keras4Torch with little or no change.If you are a keras user, Keras4Torch would be much perfect for you.
 
-
+Keras4Torch is a simple tool for training PyTorch model in a keras style. Keras4Torch provide a high-level feature: implementing model training with barely few lines of code.the core code of Keras4Torch are  `keras4torch.Model()`, `model.compile`,`model.fit()`,  `model.evaluate()` and `model.predict()`. If you are a keras enthusiast, Keras4Torch would be much perfect for you.
 
 ## Installation
 
@@ -21,8 +21,6 @@ Keras4Torch supports Python 3.6 or newer.
 
 
 ## Quick Start
-
-The usage of Keras4Torch is almost the same with Keras.
 
 Let's start with a simple example of MNIST!
 
@@ -59,7 +57,7 @@ model = torch.nn.Sequential(
 model = keras4torch.Model(model)    # attention this line
 ```
 
-#### (3) Compile Loss and Metric
+#### (3) Compile Optimizer, Loss and Metric
 
 ```python
 model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
@@ -120,6 +118,11 @@ OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
 
 ## Communication
 
-If you have problems when using Keras4Torch, check [Github Issues](https://github.com/blueloveTH/keras4torch/issues) or send email to blueloveTH@foxmail.com.
+If you have any problems using Keras4Torch, please open a [Github Issues](https://github.com/blueloveTH/keras4torch/issues) or send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
 
 We also welcome Pull Requests.
+
+Keras4Torch is still being developing, We are really looking forward to your participation.
+
+Any contribution would be much appreciated : )
+
