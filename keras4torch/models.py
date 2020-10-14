@@ -12,7 +12,7 @@ from .metrics import create_metric_by_name
 from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 class Model(torch.nn.Module):
     """
@@ -52,7 +52,7 @@ class Model(torch.nn.Module):
         """Prints a string summary of the network."""
         torchsummary.summary(self.model, input_shape, depth=depth, verbose=1)
 
-    def compile(self, optimizer, loss, device=None, metrics=None):
+    def compile(self, optimizer, loss, metrics=None, device=None):
         """
         Configures the model for training.
 

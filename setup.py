@@ -5,10 +5,10 @@ with open("README.md", "rt", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="keras4torch",
-    version="0.3.0",
+    version="0.3.1",
     author="Keras4Torch Development Team",
     author_email="blueloveTH@foxmail.com",
-    description="A Lightweight Keras API for Training PyTorch Models",
+    description="An Easy-to-Use Wrapper for Training PyTorch Models",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/blueloveTH/keras4torch",

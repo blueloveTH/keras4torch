@@ -4,7 +4,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
 [![pypi](https://img.shields.io/pypi/v/keras4torch.svg)](https://pypi.python.org/pypi/keras4torch)
-[![GitHub license](docs/license-MIT-blue.svg)](https://github.com/blueloveTH/keras4torch)
+[![License](https://img.shields.io/github/license/blueloveTH/keras4torch.svg)](https://github.com/blueloveTH/keras4torch/blob/master/LICENSE)
 
 Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. Once the model is wrapped, you can config the model with losses and metrics via `model.compile()`, train the model with `model.fit()`, or use the model to do prediction with `model.predict()`.
 
@@ -102,29 +102,16 @@ OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
 
 
 
-## Feature Support
-
-
-
-|                 | keras4torch | torchkeras | keras |
-| --------------- | ----------- | ---------- | ----- |
-| callbacks       | √           | x          | √     |
-| metrics         | √           | √          | √     |
-| numpy dataset   | √           | x          | √     |
-| GPU support     | √           | √          | √     |
-| shape inference | x           | x          | √     |
-| functional API  | x           | x          | √     |
-| multi-input     | x           | x          | √     |
-
-
-
 ## Communication
 
-If you have any problems using Keras4Torch, please open a [Github Issue](https://github.com/blueloveTH/keras4torch/issues) or send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
+If you have any problem when using Keras4Torch, please:
 
-We also welcome Pull Requests.
++ open a [Github Issue](https://github.com/blueloveTH/keras4torch/issues) 
++ send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
 
-Keras4Torch is still being developing, We are really looking forward to your participation.
+Keras4Torch is still under development.
 
-Any contribution would be much appreciated : )
+Any contribution to us would be more than welcome : )
+
+You can contribute new features by opening a Pull Request. (The details will be updated soon)
 
