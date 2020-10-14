@@ -18,7 +18,7 @@ class Model(torch.nn.Module):
     """
     `Model` wraps a `nn.Module` with training and inference features.
 
-    Once the model is created, you can config the model with losses and metrics\n  with `model.compile()`, train the model with `model.fit()`, or use the model\n  to do prediction with `model.predict()`.
+    Once the model is wrapped, you can config the model with losses and metrics\n  with `model.compile()`, train the model with `model.fit()`, or use the model\n  to do prediction with `model.predict()`.
     """
     def __init__(self, model):
         super(Model, self).__init__()

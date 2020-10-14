@@ -6,9 +6,9 @@
 [![pypi](https://img.shields.io/pypi/v/keras4torch.svg)](https://pypi.python.org/pypi/keras4torch)
 [![License](https://img.shields.io/github/license/blueloveTH/keras4torch.svg)](https://github.com/blueloveTH/keras4torch/blob/master/LICENSE)
 
-Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. Once the model is wrapped, you can config the model with losses and metrics via `model.compile()`, train the model with `model.fit()`, or use the model to do prediction with `model.predict()`.
+Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. Once the model is wrapped, the training process can be done with only a few lines of code.
 
-If you are a Keras user, then most of your training code can work well in Keras4Torch with little change.
+*If you are a Keras user, most of your training code can work well in Keras4Torch with little change.*
 
 ## Installation
 
@@ -32,7 +32,7 @@ from torch import nn
 import keras4torch
 ```
 
-#### (1) Preprocess Data
+#### Step1: Preprocess Data
 
 ```python
 mnist = torchvision.datasets.MNIST(root='./', download=True)
@@ -44,7 +44,7 @@ x_train, y_train = X[:40000], y[:40000]
 x_test, y_test = X[40000:], y[40000:]
 ```
 
-#### (2) Define the Model
+#### Step2: Define the Model
 
 ```python
 model = torch.nn.Sequential(
@@ -57,13 +57,13 @@ model = torch.nn.Sequential(
 model = keras4torch.Model(model)    # attention this line
 ```
 
-#### (3) Compile Optimizer, Loss and Metric
+#### Step3: Config Optimizer, Loss and Metric
 
 ```python
 model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
 ```
 
-#### (4) Training
+#### Step4: Training
 
 ```python
 history = model.fit(x_train, y_train,
@@ -82,7 +82,7 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 ... ...
 ```
 
-#### (5) Plot Learning Curve
+#### Step5: Plot Learning Curve
 
 ```
 history.plot(kind='line', y=['acc', 'val_acc'])
@@ -90,7 +90,7 @@ history.plot(kind='line', y=['acc', 'val_acc'])
 
 <img src="docs/learning_curve.svg"  />
 
-#### (6) Evaluate on Test Set
+#### Step6: Evaluate on Test Set
 
 ```python
 model.evaluate(x_test, y_test)
