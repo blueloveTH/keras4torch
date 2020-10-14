@@ -8,9 +8,9 @@
 
 Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. Once the model is wrapped, the training process can be done with only a few lines of code.
 
-+ *If you are a Keras user, most of your training code can work well in Keras4Torch with little change.*
++ If you are a Keras user, most of your training code can work well in Keras4Torch with little change.
 
-+ *If you are a pytorch user, Keras4Torch can help you to train a pytorch model with barely few lines of code.*
++ If you are a pytorch user, Keras4Torch can help you to train a pytorch model with barely few lines of code.
 
 ## Installation
 

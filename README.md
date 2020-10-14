@@ -112,9 +112,9 @@ history.plot(kind='line', y=['acc', 'val_acc'])
 
 <img src="docs/learning_curve.svg"  />
 
-#### Step6: 在测试集上验证
+#### Step6: 在测试集上评估
 
-验证测试集上的损失和准确率。
+评估测试集上的损失和准确率。
 
 ```python
 model.evaluate(x_test, y_test)
