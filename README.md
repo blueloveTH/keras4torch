@@ -1,27 +1,24 @@
 # Keras4Torch
 
-A Lightweight Keras API for Training PyTorch Models
+#### "A Easy To Use Pytorch API for Training PyTorch Models❤"
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
+[![pypi](https://img.shields.io/pypi/v/keras4torch.svg)](https://pypi.python.org/pypi/keras4torch)
 [![GitHub license](docs/license-MIT-blue.svg)](https://github.com/blueloveTH/keras4torch)
+
+Keras4Torch is a simple tool for training PyTorch model in a keras style. Keras4Torch provide a high-level feature: implementing model training with barely few lines of code.the core code of Keras4Torch are  `keras4torch.Model()`, `model.compile`,`model.fit()`,  `model.evaluate()` and `model.predict()`. If you are a keras enthusiast, Keras4Torch would be much perfect for you.
 
 ## Installation
 
-Keras4Torch is available at the [Python Package Index](https://pypi.org/project/keras4torch/) and on [Anaconda Cloud](https://anaconda.org/conda-forge/keras4torch).
-
-```bash
-# PyPI
-$ pip install keras4torch
-
-# Anaconda Cloud
-$ conda install -c conda-forge keras4torch
 ```
+pip install keras4torch
+```
+
+Keras4Torch supports Python 3.6 or newer.
 
 
 
 ## Quick Start
-
-The usage of Keras4Torch is almost the same with Keras.
 
 Let's start with a simple example of MNIST!
 
@@ -41,8 +38,8 @@ X, y = mnist.train_data, mnist.train_labels
 
 X = X.float() / 255.0    # scale the pixels to [0, 1]
 
-x_train = X[:40000]; y_train = y[:40000]
-x_test = X[40000:]; y_test = y[40000:]
+x_train, y_train = X[:40000], y[:40000]
+x_test, y_test = X[40000:], y[40000:]
 ```
 
 #### (2) Define the Model
@@ -58,7 +55,7 @@ model = torch.nn.Sequential(
 model = keras4torch.Model(model)    # attention this line
 ```
 
-#### (3) Compile Loss and Metric
+#### (3) Compile Optimizer, Loss and Metric
 
 ```python
 model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
@@ -105,29 +102,25 @@ OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
 
 ## Feature Support
 
-|                 | keras4torch | torchkeras | tf.keras |
-| --------------- | ----------- | ---------- | -------- |
-| callbacks       | √           | x          | √        |
-| metrics         | √           | √          | √        |
-| numpy dataset   | √           | x          | √        |
-| GPU support     | √           | √          | √        |
-| shape inference | x           | x          | √        |
-| functional API  | x           | x          | √        |
-| multi-input     | x           | x          | √        |
+|                 | keras4torch | torchkeras | keras |
+| --------------- | ----------- | ---------- | ----- |
+| callbacks       | √           | x          | √     |
+| metrics         | √           | √          | √     |
+| numpy dataset   | √           | x          | √     |
+| GPU support     | √           | √          | √     |
+| shape inference | x           | x          | √     |
+| functional API  | x           | x          | √     |
+| multi-input     | x           | x          | √     |
 
 
 
 ## Communication
 
-- [GitHub Issues] for bug reports, feature requests and questions.
-- [QQ Group] for interactive chat with developers.
+If you have any problems using Keras4Torch, please open a [Github Issues](https://github.com/blueloveTH/keras4torch/issues) or send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
 
-[GitHub issues]: https://github.com/blueloveTH/keras4torch/issues
-[QQ Group]: https://xxx
+We also welcome Pull Requests.
 
+Keras4Torch is still being developing, We are really looking forward to your participation.
 
-
-
-## Contribution
-
+Any contribution would be much appreciated : )
 
