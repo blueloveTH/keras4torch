@@ -14,13 +14,13 @@
 pip install keras4torch
 ```
 
-Keras4Torch 支持 Python 3.6 及以上版本。
+支持Python 3.6及以上版本。
 
 
 
 ## 快速开始
 
-作为示例，让我们开始编写一个MNIST手写数字识别的程序！
+作为示例，让我们开始编写一个MNIST手写数字识别程序！
 
 ```python
 import torch
@@ -48,7 +48,7 @@ x_test, y_test = X[40000:], y[40000:]
 
 #### Step2: 构建模型
 
-我们使用`torch.nn.Sequential`定义一个线性模型，由三层全连接组成，使用ReLU激活函数。
+我们使用`torch.nn.Sequential`定义一个由三层全连接组成的线性模型，激活函数为ReLU。
 
 接着，使用`keras4torch.Model`封装Sequential模型，以集成训练API。
 
@@ -65,7 +65,9 @@ model = keras4torch.Model(model)
 
 #### Step3: 设置优化器、损失函数和度量
 
-`model.compile()`函数可对模型进行必要的配置，参数既可以使用字符串，也可以使用`torch.nn`模块中提供的类实例。
+`model.compile()`函数对模型进行必要的配置。
+
+参数既可以使用字符串，也可以使用`torch.nn`模块中提供的类实例。
 
 ```python
 model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
@@ -73,7 +75,9 @@ model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
 
 #### Step4: 训练模型
 
-`model.fit()`是训练模型的方法，将以batch_size=512运行30轮次，指定80%数据用于训练集，剩余20%用作验证集。
+`model.fit()`是训练模型的方法，将以batch_size=512运行30轮次。
+
+`validation_split=0.2`指定80%数据用于训练集，剩余20%用作验证集。
 
 ```python
 history = model.fit(x_train, y_train,
@@ -94,7 +98,7 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 
 #### Step5: 打印学习曲线
 
-`model.fit()`方法在结束时，返回关于训练历史数据的`pandas.DataFrame`类型。
+`model.fit()`方法在结束时，返回关于训练历史数据的`pandas.DataFrame`实例。
 
 ```
 history.plot(kind='line', y=['acc', 'val_acc'])
