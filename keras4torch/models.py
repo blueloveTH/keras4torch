@@ -12,7 +12,7 @@ from .metrics import create_metric_by_name
 from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 class Model(torch.nn.Module):
     """

@@ -1,12 +1,12 @@
 # Keras4Torch
 
-####  **[README In English](https://github.com/blueloveTH/keras4torch/blob/main/README_en.md)**
+####  **[README in English](https://github.com/blueloveTH/keras4torch/blob/main/README_en.md)**
 
 ####  “开箱即用”的PyTorch模型训练高级API
 
-+ 对于keras爱好者来说，Keras4Torch 保留了绝大多数的Keras特性。你能够使用和keras相同的代码训练、验证、测试一个pytorch模型。
++ 对keras爱好者来说，Keras4Torch保留了绝大多数的Keras特性。你能够使用和keras相同的代码运行pytorch模型。
 
-+ 对于pytorch爱好者来说，Keras4Torch 使得你只需要几行代码就可以完成pytorch模型的训练、验证、测试。
++ 对pytorch爱好者来说，Keras4Torch使你只需要几行代码就可以完成pytorch模型的训练、评估和推理。
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
 [![pypi](https://img.shields.io/pypi/v/keras4torch.svg)](https://pypi.python.org/pypi/keras4torch)
