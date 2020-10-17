@@ -7,12 +7,13 @@ from collections import OrderedDict
 from torch.utils.data import random_split
 
 from ._training import Trainer
+from .layers import KerasLayer
 from .metrics import Metric
 from .metrics import create_metric_by_name
 from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 
-__version__ = '0.3.2'
+__version__ = '0.4.1'
 
 class Model(torch.nn.Module):
     """
@@ -24,6 +25,13 @@ class Model(torch.nn.Module):
         super(Model, self).__init__()
         self.model = model
         self.compiled = False
+        self.built = False
+
+        self.has_keras_layer = False
+        def check_keras_layer(m):
+            if isinstance(m, KerasLayer):
+                self.has_keras_layer = True
+        self.model.apply(check_keras_layer)
 
     def forward(self, x):
         return self.model.forward(x)
@@ -48,8 +56,19 @@ class Model(torch.nn.Module):
 
     ########## keras-style methods below ##########
 
+    @torch.no_grad()
+    def build(self, input_shape):
+        """Builds the model when it contains `KerasLayer`."""
+        input_shape = [2] + list(input_shape)
+        probe_input = torch.zeros(size=input_shape)
+        self.model.forward(probe_input)
+        self.built = True
+        return self
+
     def summary(self, input_shape, depth=3):
         """Prints a string summary of the network."""
+        if self.has_keras_layer and not self.built:
+            raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
         torchsummary.summary(self.model, input_shape, depth=depth, verbose=1)
 
     def compile(self, optimizer, loss, metrics=None, device=None):
@@ -67,7 +86,9 @@ class Model(torch.nn.Module):
 
         * :attr:`device`: Device the model will run on, if `None` it will use 'cuda' when `torch.cuda.is_available()` otherwise 'cpu'.
         """
-        self.compiled = True
+        if self.has_keras_layer and not self.built:
+            raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
+        
         if isinstance(loss, str):
             loss = create_loss_by_name(loss)
         if isinstance(optimizer, str):
@@ -93,6 +114,7 @@ class Model(torch.nn.Module):
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.to(device=device)
         self.trainer = Trainer(model=self, optimizer=optimizer, loss=loss, metrics=m, device=device)
+        self.compiled = True
 
 
     def fit(self, x, y, epochs, batch_size=32,
@@ -144,12 +166,18 @@ class Model(torch.nn.Module):
     @torch.no_grad()
     def predict(self, inputs, batch_size=32, device=None):
         """Generates output predictions for the input samples.\n\n    Computation is done in batches."""
+        if self.has_keras_layer and not self.built:
+            raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
+
         if device == None:
-            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            if self.compiled:
+                device = self.trainer.device
+            else:
+                device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         inputs = self.to_tensor(inputs)
+        self.eval().to(device=device)
         outputs = []
-        self.eval()
 
         data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False)
         for x_batch in data_loader:

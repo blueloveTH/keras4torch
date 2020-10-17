@@ -1,6 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from abc import abstractclassmethod
+
+from torch.nn.modules.conv import Conv1d
 
 class Lambda(nn.Module):
     """Wraps a function as `nn.Module`."""
@@ -71,3 +74,49 @@ class SamePadding(nn.Module):
         x = self.module(x)
         x = F.pad(x, self.pad_list)
         return x
+
+class KerasLayer(nn.Module):
+    def __init__(self, *args, **kwargs) -> None:
+        super(KerasLayer, self).__init__()
+        self.args = args
+        self.kwargs = kwargs
+        self.module = None
+
+    @abstractclassmethod
+    def build(self, in_shape: torch.Size):
+        pass
+
+    def forward(self, x):
+        if not self.module:
+            self.module = self.build(x.shape)
+        return self.module.forward(x)
+
+# Conv
+class Conv1d(KerasLayer):
+    def build(self, in_shape):
+        return nn.Conv1d(in_shape[1], *self.args, **self.kwargs)
+
+class Conv2d(KerasLayer):
+    def build(self, in_shape):
+        return nn.Conv2d(in_shape[1], *self.args, **self.kwargs)
+
+class Conv3d(KerasLayer):
+    def build(self, in_shape):
+        return nn.Conv3d(in_shape[1], *self.args, **self.kwargs)
+
+# BatchNorm
+class BatchNorm1d(KerasLayer):
+    def build(self, in_shape):
+        return nn.BatchNorm1d(in_shape[1], *self.args, **self.kwargs)
+
+class BatchNorm2d(KerasLayer):
+    def build(self, in_shape):
+        return nn.BatchNorm2d(in_shape[1], *self.args, **self.kwargs)
+
+class BatchNorm3d(KerasLayer):
+    def build(self, in_shape):
+        return nn.BatchNorm3d(in_shape[1], *self.args, **self.kwargs)
+
+class Linear(KerasLayer):
+    def build(self, in_shape):
+        return nn.Linear(in_shape[1], *self.args, **self.kwargs)
