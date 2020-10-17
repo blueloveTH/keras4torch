@@ -13,7 +13,7 @@ from .metrics import create_metric_by_name
 from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 class Model(torch.nn.Module):
     """
@@ -58,22 +58,23 @@ class Model(torch.nn.Module):
 
     @torch.no_grad()
     def build(self, input_shape):
-        """Builds the model when it contains `KerasLayer`."""
-        input_shape = [2] + list(input_shape)
-        probe_input = torch.zeros(size=input_shape)
-        self.model.forward(probe_input)
+        """Build the model when it contains `KerasLayer`."""
+        if self.has_keras_layer:
+            input_shape = [2] + list(input_shape)
+            probe_input = torch.zeros(size=input_shape)
+            self.model.forward(probe_input)
         self.built = True
         return self
 
     def summary(self, input_shape, depth=3):
-        """Prints a string summary of the network."""
+        """Print a string summary of the network."""
         if self.has_keras_layer and not self.built:
             raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
         torchsummary.summary(self.model, input_shape, depth=depth, verbose=1)
 
     def compile(self, optimizer, loss, metrics=None, device=None):
         """
-        Configures the model for training.
+        Configure the model for training.
 
         Args:
 
@@ -124,7 +125,7 @@ class Model(torch.nn.Module):
                 verbose=1,
                 precise_mode=False,
                 ):
-        """Trains the model for a fixed number of epochs (iterations on a dataset)."""
+        """Train the model for a fixed number of epochs (iterations on a dataset)."""
 
         assert self.compiled
         x, y = self.to_tensor(x, y)
@@ -157,7 +158,7 @@ class Model(torch.nn.Module):
 
     @torch.no_grad()
     def evaluate(self, x, y, batch_size=32):
-        """Returns the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
+        """Return the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
         assert self.compiled
         x, y = self.to_tensor(x, y)
         val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False)
@@ -165,7 +166,7 @@ class Model(torch.nn.Module):
 
     @torch.no_grad()
     def predict(self, inputs, batch_size=32, device=None):
-        """Generates output predictions for the input samples.\n\n    Computation is done in batches."""
+        """Generate output predictions for the input samples.\n\n    Computation is done in batches."""
         if self.has_keras_layer and not self.built:
             raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
 
@@ -186,9 +187,9 @@ class Model(torch.nn.Module):
         return torch.cat(outputs, dim=0).cpu().numpy()
 
     def save_weights(self, filepath):
-        """Equals to `torch.save(model.state_dict(), filepath)`."""
+        """Equal to `torch.save(model.state_dict(), filepath)`."""
         torch.save(self.state_dict(), filepath)
 
     def load_weights(self, filepath):
-        """Equals to `model.load_state_dict(filepath)`."""
+        """Equal to `model.load_state_dict(filepath)`."""
         self.load_state_dict(filepath)

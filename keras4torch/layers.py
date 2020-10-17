@@ -6,7 +6,7 @@ from abc import abstractclassmethod
 from torch.nn.modules.conv import Conv1d
 
 class Lambda(nn.Module):
-    """Wraps a function as `nn.Module`."""
+    """Wrap a function as `nn.Module`."""
     def __init__(self, fn):
         super(Lambda, self).__init__()
         self.lambda_func = fn
@@ -17,7 +17,7 @@ class Lambda(nn.Module):
 
 class SamePadding(nn.Module):
     """
-    Pads the output of a module to have the same shape as its input.
+    Pad the output of a module to have the same shape as its input.
 
     Args:
 

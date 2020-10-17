@@ -5,8 +5,8 @@ with open("README.md", "rt", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="keras4torch",
-    version="0.4.1",
-    author="Keras4Torch Development Team",
+    version="0.4.2",
+    author="Keras4Torch Team",
     author_email="blueloveTH@foxmail.com",
     description="An Easy-to-Use Wrapper for Training PyTorch Models",
     long_description=long_description,
