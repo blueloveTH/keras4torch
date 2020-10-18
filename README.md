@@ -69,6 +69,23 @@ model = torch.nn.Sequential(
 model = keras4torch.Model(model)
 ```
 
+**News (v0.4.1):** 您也可以使用keras4torch.layers提供的`KerasLayer`，以自动推算输入维度。
+
+包含`KerasLayer`的模型需要调用`model.build()`，其参数是样本的维度。具体示例如下：
+
+```python
+import keras4torch.layers as layers
+
+model = torch.nn.Sequential(
+    nn.Flatten(),
+    layers.Linear(512), nn.ReLU(),
+    layers.Linear(128), nn.ReLU(),
+    layers.Linear(10)
+)
+
+model = keras4torch.Model(model).build(input_shape=[28, 28])
+```
+
 #### Step3: 设置优化器、损失函数和度量
 
 `model.compile()`函数对模型进行必要的配置。
