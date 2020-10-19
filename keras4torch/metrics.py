@@ -4,6 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from abc import abstractclassmethod
 
+from torch.nn.modules import activation
+
 class Metric():
     def __init__(self) -> None:
         pass
@@ -11,31 +13,27 @@ class Metric():
     def get_abbr(self) -> str:
         pass
 
-# For categorical classification
 class Accuracy(Metric):
     def __init__(self) -> None:
         super(Accuracy, self).__init__()
 
     def __call__(self, y_pred, y_true):
-        right_cnt = (y_pred.argmax(-1) == y_true).sum()
-        return right_cnt * 1.0 / y_true.shape[0]
-    
-    def get_abbr(self) -> str:
-        return 'acc'
-
-class BinaryAccuracy(Metric):
-    def __init__(self, activation=torch.sigmoid) -> None:
-        super(BinaryAccuracy, self).__init__()
-        if activation == None:
-            activation = lambda x: x
-        self.activation = activation
-
-    def __call__(self, y_pred, y_true):
-        right_cnt = (torch.round(self.activation(y_pred)) == y_true).sum()
-        return right_cnt * 1.0 / y_true.shape[0]
+        if y_true.shape[-1] == 1:
+            return binary_accuracy(y_pred, y_true)
+        else:
+            return categorical_accuracy(y_pred, y_true)
 
     def get_abbr(self) -> str:
         return 'acc'
+
+def categorical_accuracy(y_pred, y_true):
+    right_cnt = (y_pred.argmax(-1) == y_true).sum()
+    return right_cnt.float() / y_true.shape[0]
+
+def binary_accuracy(y_pred, y_true, activation=torch.sigmoid):
+    right_cnt = (torch.round(activation(y_pred)) == y_true).sum()
+    return right_cnt.float() / y_true.shape[0]
+
 
 class ROC_AUC(Metric):
     def __init__(self, activation=torch.sigmoid) -> None:
@@ -58,7 +56,6 @@ class ROC_AUC(Metric):
 
     def get_abbr(self) -> str:
         return 'auc'
-
 
 
 # For Regression
@@ -105,7 +102,7 @@ _metrics_dict = OrderedDict({
     'mae': MeanAbsoluteError,
     'rmse': RootMeanSquaredError,
     'acc': Accuracy,
-    'binary_acc': BinaryAccuracy,
+    'accuracy': Accuracy,
     'auc': ROC_AUC,
     'roc_auc': ROC_AUC
 })

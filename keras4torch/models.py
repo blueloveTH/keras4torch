@@ -13,7 +13,7 @@ from .metrics import create_metric_by_name
 from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 
-__version__ = '0.4.2'
+__version__ = '0.4.5'
 
 class Model(torch.nn.Module):
     """
@@ -119,7 +119,7 @@ class Model(torch.nn.Module):
 
 
     def fit(self, x, y, epochs, batch_size=32,
-                validation_split=None, val_split_seed=None,
+                validation_split=None, val_split_seed=7,
                 validation_data=None,
                 callbacks=[],
                 verbose=1,
@@ -142,10 +142,7 @@ class Model(torch.nn.Module):
         if validation_split != None:
             val_length = int(len(train_set) * validation_split)
             train_length = len(train_set) - val_length
-            if val_split_seed != None:
-                train_set, val_set = random_split(train_set, [train_length, val_length], generator=torch.Generator().manual_seed(val_split_seed))
-            else:
-                train_set, val_set = random_split(train_set, [train_length, val_length])
+            train_set, val_set = random_split(train_set, [train_length, val_length], generator=torch.Generator().manual_seed(val_split_seed))
 
         train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False) if has_val else None
@@ -165,7 +162,7 @@ class Model(torch.nn.Module):
         return self.trainer.evaluate(val_loader)
 
     @torch.no_grad()
-    def predict(self, inputs, batch_size=32, device=None):
+    def predict(self, inputs, batch_size=32, device=None, output_numpy=True):
         """Generate output predictions for the input samples.\n\n    Computation is done in batches."""
         if self.has_keras_layer and not self.built:
             raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
@@ -184,7 +181,11 @@ class Model(torch.nn.Module):
         for x_batch in data_loader:
             outputs.append(self.forward(x_batch[0].to(device=device)))
 
-        return torch.cat(outputs, dim=0).cpu().numpy()
+        outputs = torch.cat(outputs, dim=0)
+        if output_numpy:
+            return outputs.cpu().numpy()
+        else:
+            return outputs
 
     def save_weights(self, filepath):
         """Equal to `torch.save(model.state_dict(), filepath)`."""
