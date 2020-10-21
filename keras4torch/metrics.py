@@ -18,7 +18,7 @@ class Accuracy(Metric):
         super(Accuracy, self).__init__()
 
     def __call__(self, y_pred, y_true):
-        if y_true.shape[-1] == 1:
+        if y_pred.shape[-1] == 1:
             return binary_accuracy(y_pred, y_true)
         else:
             return categorical_accuracy(y_pred, y_true)
