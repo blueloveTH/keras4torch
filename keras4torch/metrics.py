@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import sklearn
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,6 +10,10 @@ from torch.nn.modules import activation
 class Metric():
     def __init__(self) -> None:
         pass
+
+    def set_device(self, device):
+        self.device = device
+
     @abstractclassmethod
     def get_abbr(self) -> str:
         pass
@@ -35,27 +40,49 @@ def binary_accuracy(y_pred, y_true, activation=torch.sigmoid):
     return right_cnt.float() / y_true.shape[0]
 
 
-class ROC_AUC(Metric):
-    def __init__(self, activation=torch.sigmoid) -> None:
-        super(ROC_AUC, self).__init__()
-        if activation == None:
-            activation = lambda x: x
+class SklearnMetric(Metric):
+    def __init__(self, activation=None) -> None:
+        super(SklearnMetric, self).__init__()
         self.activation = activation
 
         try:
-            from sklearn.metrics import roc_auc_score
+            import sklearn.metrics
         except ImportError:
             raise RuntimeError("This metric requires sklearn to be installed.")
 
-        self.score_fn = roc_auc_score
+        self.score_fn = self.get_score_fn()
 
     def __call__(self, y_pred, y_true):
+        if self.activation != None:
+            y_pred = self.activation(y_pred)
         y_true = y_true.cpu().numpy()
         y_pred = y_pred.cpu().numpy()
-        return torch.FloatTensor(self.score_fn(y_true, y_pred))
+        return torch.tensor(self.score_fn(y_true, y_pred), dtype=torch.float32, device=self.device)
+
+    @abstractclassmethod
+    def get_score_fn(self):
+        pass
+
+
+class ROC_AUC(SklearnMetric):
+    def __init__(self, activation=torch.sigmoid) -> None:
+        super(ROC_AUC, self).__init__(activation=activation)
+
+    def get_score_fn(self):
+        return sklearn.metrics.roc_auc_score
 
     def get_abbr(self) -> str:
         return 'auc'
+
+class F1_Score(SklearnMetric):
+    def __init__(self, activation=torch.sigmoid) -> None:
+        super(F1_Score, self).__init__(activation=lambda x: torch.round(activation(x)))
+
+    def get_score_fn(self):
+        return sklearn.metrics.f1_score
+
+    def get_abbr(self) -> str:
+        return 'f1'
 
 
 # For Regression
@@ -104,7 +131,9 @@ _metrics_dict = OrderedDict({
     'acc': Accuracy,
     'accuracy': Accuracy,
     'auc': ROC_AUC,
-    'roc_auc': ROC_AUC
+    'roc_auc': ROC_AUC,
+    'f1': F1_Score,
+    'f1_score': F1_Score,
 })
 
 def create_metric_by_name(name):

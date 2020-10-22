@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from enum import Enum
 
+from torch._C import device
+
 class Events(Enum):
     ON_EPOCH_END = 'on_epoch_end'
     ON_EPOCH_BEGIN = 'on_epoch_begin'
@@ -101,20 +103,26 @@ class Trainer(object):
     @torch.no_grad()
     def evaluate(self, data_loader):
         self.model.eval()
-        score_funcs = list(self.metrics.values())
+
         metrics = []
+        y_true = []
+        y_pred = []
+
         for x_batch, y_batch in data_loader:
             x = x_batch.to(device=self.device)
             y = y_batch.to(device=self.device)
-            y_pred = self.model.forward(x)
+            y_true.append(y)
+            y_pred.append(self.model.forward(x))
 
-            batch_metrics = []
-            for score_fn in score_funcs:
-                batch_metrics.append(score_fn(y_pred, y))
-            metrics.append(torch.tensor(batch_metrics))
+        y_true = torch.cat(y_true)
+        y_pred = torch.cat(y_pred)
 
-        metrics = torch.stack(metrics).mean(dim=0).cpu().numpy()
+        for score_fn in self.metrics.values():
+            metrics.append(score_fn(y_pred, y_true).mean(dim=0).cpu().numpy())
+        
         return OrderedDict({k:v for k,v in zip(self.metrics.keys(), metrics)})
+
+
 
 class Logger(object):
     def __init__(self, trainer):

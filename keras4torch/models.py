@@ -13,7 +13,7 @@ from .metrics import create_metric_by_name
 from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 
-__version__ = '0.4.6'
+__version__ = '0.4.7'
 
 class Model(torch.nn.Module):
     """
@@ -78,18 +78,20 @@ class Model(torch.nn.Module):
 
         Args:
 
-        * :attr:`optimizer`: String (name of optimizer) or optimizer instance.
+        * `optimizer`: String (name of optimizer) or optimizer instance.
 
-        * :attr:`loss`: String (name of objective function), objective function or loss instance.
+        * `loss`: String (name of objective function), objective function or loss instance.
 
-        * :attr:`metrics`: List of metrics to be evaluated by the model during training. You can also use dict to specify the 
+        * `metrics`: List of metrics to be evaluated by the model during training. You can also use dict to specify the 
         abbreviation of each metric.
 
-        * :attr:`device`: Device the model will run on, if `None` it will use 'cuda' when `torch.cuda.is_available()` otherwise 'cpu'.
+        * `device`: Device the model will run on, if `None` it will use 'cuda' when `torch.cuda.is_available()` otherwise 'cpu'.
         """
         if self.has_keras_layer and not self.built:
             raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
-        
+        if device == None:
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            
         if isinstance(loss, str):
             loss = create_loss_by_name(loss)
         if isinstance(optimizer, str):
@@ -104,6 +106,7 @@ class Model(torch.nn.Module):
                     tmp_m = create_metric_by_name(tmp_m)
                 if isinstance(tmp_m, Metric):
                     m[tmp_m.get_abbr()] = tmp_m
+                    tmp_m.set_device(device)
                 elif hasattr(tmp_m, '__call__'):
                     m[tmp_m.__name__] = tmp_m
                 else:
@@ -111,8 +114,6 @@ class Model(torch.nn.Module):
         else:
             raise TypeError('Argument `metrics` should be either a dict or list.')
 
-        if device == None:
-            device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.to(device=device)
         self.trainer = Trainer(model=self, optimizer=optimizer, loss=loss, metrics=m, device=device)
         self.compiled = True

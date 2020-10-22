@@ -21,9 +21,9 @@ class SamePadding(nn.Module):
 
     Args:
 
-    * :attr:`module` (nn.Module): Target module, usually a convlutional one.
+    * `module` (nn.Module): Target module, usually a convlutional one.
 
-    * :attr:`n_dims` (int): Number of dimensions to be pad, if `None` will be infered automatically.
+    * `n_dims` (int): Number of dimensions to be pad, if `None` will be infered automatically.
 
     Usage:
     >>> conv2d = SamePadding(
