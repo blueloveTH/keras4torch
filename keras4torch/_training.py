@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 from enum import Enum
 
-from torch._C import device
-
 class Events(Enum):
     ON_EPOCH_END = 'on_epoch_end'
     ON_EPOCH_BEGIN = 'on_epoch_begin'
@@ -38,23 +36,23 @@ class Trainer(object):
         for func in func_list:
             func(self)
 
-    def run(self, train_loader, val_loader, max_epochs, verbose, precise_mode):
+    def run(self, train_loader, val_loader, max_epochs, verbose, precise_train_metrics):
         self.max_epochs = max_epochs
         self.logger.verbose = verbose
         self.logger.on_train_begin(train_loader, val_loader)
         self.__fire_event(Events.ON_TRAIN_BEGIN)
+
+        if precise_train_metrics:
+            train_fn = self.train_precise_mode
+        else:
+            train_fn = self.train_fast_mode
 
         for epoch in range(1, max_epochs+1):
             self.epoch = epoch
             self.logger.on_epoch_begin()
             self.__fire_event(Events.ON_EPOCH_BEGIN)
 
-            if precise_mode:
-                self.train_precise_mode(train_loader)
-                train_metrics = self.evaluate(train_loader) 
-            else:
-                train_metrics = self.train_fast_mode(train_loader)
-
+            train_metrics = train_fn(train_loader)
             val_metrics = self.evaluate(val_loader) if val_loader else {}
 
             self.logger.on_epoch_end(epoch=epoch, max_epochs=max_epochs, train_metrics=train_metrics, val_metrics=val_metrics)
@@ -77,36 +75,39 @@ class Trainer(object):
             loss = self.loss(y_pred, y)
             loss.backward()
             self.optimizer.step()
+        
+        return self.evaluate(data_loader)
 
     def train_fast_mode(self, data_loader):
         self.model.train()
-        score_funcs = list(self.metrics.values())[1:]
-        metrics = []
+        metrics, y_true, y_pred = [], [], []
+
         for x_batch, y_batch in data_loader:
             x = x_batch.to(device=self.device)
             y = y_batch.to(device=self.device)
             self.optimizer.zero_grad()
-            y_pred = self.model.forward(x)
-            loss = self.loss(y_pred, y)
+            y_batch_pred = self.model.forward(x)
+            loss = self.loss(y_batch_pred, y)
             loss.backward()
             self.optimizer.step()
 
-            with torch.no_grad():
-                batch_metrics = [loss]
-                for score_fn in score_funcs:
-                    batch_metrics.append(score_fn(y_pred, y))
-                metrics.append(torch.tensor(batch_metrics))
+            y_pred.append(y_batch_pred)
+            y_true.append(y)
 
-        metrics = torch.stack(metrics).mean(dim=0).cpu().numpy()
+        y_true = torch.cat(y_true)
+        y_pred = torch.cat(y_pred)
+
+        with torch.no_grad():
+            for score_fn in self.metrics.values():
+                metrics.append(score_fn(y_pred, y_true).mean(dim=0).cpu().item())
+
         return OrderedDict({k:v for k,v in zip(self.metrics.keys(), metrics)})
 
     @torch.no_grad()
     def evaluate(self, data_loader):
         self.model.eval()
 
-        metrics = []
-        y_true = []
-        y_pred = []
+        metrics, y_true, y_pred = [], [], []
 
         for x_batch, y_batch in data_loader:
             x = x_batch.to(device=self.device)
@@ -118,7 +119,7 @@ class Trainer(object):
         y_pred = torch.cat(y_pred)
 
         for score_fn in self.metrics.values():
-            metrics.append(score_fn(y_pred, y_true).mean(dim=0).cpu().numpy())
+            metrics.append(score_fn(y_pred, y_true).mean(dim=0).cpu().item())
         
         return OrderedDict({k:v for k,v in zip(self.metrics.keys(), metrics)})
 

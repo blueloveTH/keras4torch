@@ -1,7 +1,5 @@
 import torch
 from torch.utils.data import DataLoader, TensorDataset
-import numpy as np
-import pandas as pd
 import torchsummary
 from collections import OrderedDict
 from torch.utils.data import random_split
@@ -12,8 +10,9 @@ from .metrics import Metric
 from .metrics import create_metric_by_name
 from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
+from .utils import to_tensor
 
-__version__ = '0.4.7'
+__version__ = '0.5.1'
 
 class Model(torch.nn.Module):
     """
@@ -36,20 +35,6 @@ class Model(torch.nn.Module):
     def forward(self, x):
         return self.model.forward(x)
 
-    @staticmethod
-    def to_tensor(*args):
-        rt = []
-        for arg in args:
-            if isinstance(arg, pd.DataFrame):
-                arg = torch.from_numpy(arg.values)
-            elif isinstance(arg, np.ndarray):
-                arg = torch.from_numpy(arg)
-            elif not isinstance(arg, torch.Tensor):
-                raise TypeError('Only DataFrame, ndarray and torch.Tensor are supported.')
-            rt.append(arg)
-                
-        return rt[0] if len(rt) == 1 else tuple(rt)
-
     def count_params(self) -> int:
         """Count the total number of scalars composing the weights."""
         return sum([p.numel() for p in self.parameters()])
@@ -66,10 +51,13 @@ class Model(torch.nn.Module):
         self.built = True
         return self
 
-    def summary(self, input_shape, depth=3):
-        """Print a string summary of the network."""
+    def _check_keras_layer(self):
         if self.has_keras_layer and not self.built:
             raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
+
+    def summary(self, input_shape, depth=3):
+        """Print a string summary of the network."""
+        self._check_keras_layer()
         torchsummary.summary(self.model, input_shape, depth=depth, verbose=1)
 
     def compile(self, optimizer, loss, metrics=None, device=None):
@@ -85,10 +73,9 @@ class Model(torch.nn.Module):
         * `metrics`: List of metrics to be evaluated by the model during training. You can also use dict to specify the 
         abbreviation of each metric.
 
-        * `device`: Device the model will run on, if `None` it will use 'cuda' when `torch.cuda.is_available()` otherwise 'cpu'.
+        * `device`: Device of the model and its trainer, if `None` 'cuda' will be used when `torch.cuda.is_available()` otherwise 'cpu'.
         """
-        if self.has_keras_layer and not self.built:
-            raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
+        self._check_keras_layer()
         if device == None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
             
@@ -124,12 +111,12 @@ class Model(torch.nn.Module):
                 validation_data=None,
                 callbacks=[],
                 verbose=1,
-                precise_mode=False,
+                precise_train_metrics=False,
                 ):
         """Train the model for a fixed number of epochs (iterations on a dataset)."""
 
         assert self.compiled
-        x, y = self.to_tensor(x, y)
+        x, y = to_tensor(x, y)
 
         assert not (validation_data != None and validation_split != None)
         has_val = validation_data != None or validation_split != None
@@ -137,7 +124,7 @@ class Model(torch.nn.Module):
         train_set = TensorDataset(x, y)
     
         if validation_data != None:
-            x_val, y_val = self.to_tensor(validation_data[0], validation_data[1])
+            x_val, y_val = to_tensor(validation_data[0], validation_data[1])
             val_set = TensorDataset(x_val, y_val)
 
         if validation_split != None:
@@ -150,7 +137,7 @@ class Model(torch.nn.Module):
 
         # Training
         self.trainer.register_callbacks(callbacks)
-        history = self.trainer.run(train_loader, val_loader, max_epochs=epochs, verbose=verbose, precise_mode=precise_mode)
+        history = self.trainer.run(train_loader, val_loader, max_epochs=epochs, verbose=verbose, precise_train_metrics=precise_train_metrics)
 
         return history
 
@@ -158,15 +145,14 @@ class Model(torch.nn.Module):
     def evaluate(self, x, y, batch_size=32):
         """Return the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
         assert self.compiled
-        x, y = self.to_tensor(x, y)
+        x, y = to_tensor(x, y)
         val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False)
         return self.trainer.evaluate(val_loader)
 
     @torch.no_grad()
     def predict(self, inputs, batch_size=32, device=None, output_numpy=True):
         """Generate output predictions for the input samples.\n\n    Computation is done in batches."""
-        if self.has_keras_layer and not self.built:
-            raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
+        self._check_keras_layer()
 
         if device == None:
             if self.compiled:
@@ -174,7 +160,7 @@ class Model(torch.nn.Module):
             else:
                 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        inputs = self.to_tensor(inputs)
+        inputs = to_tensor(inputs)
         self.eval().to(device=device)
         outputs = []
 
@@ -193,5 +179,5 @@ class Model(torch.nn.Module):
         torch.save(self.state_dict(), filepath)
 
     def load_weights(self, filepath):
-        """Equal to `model.load_state_dict(filepath)`."""
-        self.load_state_dict(filepath)
+        """Equal to `model.load_state_dict(torch.load(filepath))`."""
+        self.load_state_dict(torch.load(filepath))

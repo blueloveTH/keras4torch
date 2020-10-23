@@ -118,12 +118,6 @@ class RootMeanSquaredError(Metric):
         return 'rmse'
 
 
-'''
-def mean_absolute_percentage_error(y_pred, y_true):
-    return torch.mean(torch.abs((y_true - y_pred) / y_true)) * 100
-'''
-
-
 _metrics_dict = OrderedDict({
     'mse': MeanSquaredError,
     'mae': MeanAbsoluteError,
