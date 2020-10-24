@@ -1,11 +1,8 @@
 from collections import OrderedDict
 import sklearn
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from abc import abstractclassmethod
-
-from torch.nn.modules import activation
 
 class Metric():
     def __init__(self) -> None:
@@ -32,12 +29,10 @@ class Accuracy(Metric):
         return 'acc'
 
 def categorical_accuracy(y_pred, y_true):
-    right_cnt = (y_pred.argmax(-1) == y_true).sum()
-    return right_cnt.float() / y_true.shape[0]
+    return (y_pred.argmax(-1) == y_true).float().mean()
 
 def binary_accuracy(y_pred, y_true, activation=torch.sigmoid):
-    right_cnt = (torch.round(activation(y_pred)) == y_true).sum()
-    return right_cnt.float() / y_true.shape[0]
+    return (torch.round(activation(y_pred)) == y_true).float().mean()
 
 
 class SklearnMetric(Metric):

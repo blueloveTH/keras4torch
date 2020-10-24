@@ -12,7 +12,7 @@ from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 from .utils import to_tensor
 
-__version__ = '0.5.1'
+__version__ = '0.5.3'
 
 class Model(torch.nn.Module):
     """
@@ -150,7 +150,7 @@ class Model(torch.nn.Module):
         return self.trainer.evaluate(val_loader)
 
     @torch.no_grad()
-    def predict(self, inputs, batch_size=32, device=None, output_numpy=True):
+    def predict(self, inputs, batch_size=32, device=None, output_numpy=True, activation=None):
         """Generate output predictions for the input samples.\n\n    Computation is done in batches."""
         self._check_keras_layer()
 
@@ -169,6 +169,10 @@ class Model(torch.nn.Module):
             outputs.append(self.forward(x_batch[0].to(device=device)))
 
         outputs = torch.cat(outputs, dim=0)
+
+        if activation != None:
+            outputs = activation(outputs)
+
         if output_numpy:
             return outputs.cpu().numpy()
         else:
