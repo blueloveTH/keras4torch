@@ -23,8 +23,8 @@ class ModelCheckpoint(Callback):
     def __init__(self, filepath, monitor='val_loss', mode='auto', save_best_only=True, save_weights_only=True, verbose=0):
         super(ModelCheckpoint, self).__init__()
 
-        if not (save_best_only and save_weights_only):
-            raise ValueError('`ModelCheckpoint` only supports `save_best_only=True` and `save_weights_only=True`.')
+        if not (save_weights_only):
+            raise ValueError('`ModelCheckpoint` only supports `save_weights_only=True`.')
 
         self.filepath = filepath
         self.monitor = monitor
@@ -45,6 +45,12 @@ class ModelCheckpoint(Callback):
         return {Events.ON_EPOCH_END: self.on_epoch_end}
 
     def on_epoch_end(self, trainer: Trainer):
+        filename = self.filepath.format(epoch=trainer.epoch, **trainer.logger.metrics)
+
+        if not self.save_best_only:
+            trainer.model.save_weights(filename)
+            return
+
         if self.monitor not in trainer.logger.metrics:
             raise KeyError(f'No such metric: {self.monitor}.')
 
@@ -53,7 +59,7 @@ class ModelCheckpoint(Callback):
             self.best_score = curr_score
             if self.verbose == 1:
                 print("[INFO] Model saved at '{}'. The best score is {:.4f}.".format(self.filepath, self.best_score))
-            trainer.model.save_weights(self.filepath)
+            trainer.model.save_weights(filename)
 
 
 class EarlyStopping(Callback):
