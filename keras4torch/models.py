@@ -12,7 +12,7 @@ from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 from .utils import to_tensor
 
-__version__ = '0.5.3'
+__version__ = '0.5.5'
 
 class Model(torch.nn.Module):
     """

@@ -1,7 +1,6 @@
 from collections import OrderedDict
 import torch
 import time
-import numpy as np
 import pandas as pd
 from enum import Enum
 
@@ -80,7 +79,7 @@ class Trainer(object):
 
     def train_fast_mode(self, data_loader):
         self.model.train()
-        metrics, y_true, y_pred = [], [], []
+        metrics, y_true, y_pred = {}, [], []
 
         for x_batch, y_batch in data_loader:
             x = x_batch.to(device=self.device)
@@ -98,16 +97,16 @@ class Trainer(object):
         y_pred = torch.cat(y_pred)
 
         with torch.no_grad():
-            for score_fn in self.metrics.values():
-                metrics.append(score_fn(y_pred, y_true).mean(dim=0).cpu().item())
+            for key, score_fn in self.metrics.items():
+                metrics[key] = score_fn(y_pred, y_true).mean(dim=0).cpu().item()
 
-        return OrderedDict({k:v for k,v in zip(self.metrics.keys(), metrics)})
+        return metrics
 
     @torch.no_grad()
     def evaluate(self, data_loader):
         self.model.eval()
 
-        metrics, y_true, y_pred = [], [], []
+        metrics, y_true, y_pred = {}, [], []
 
         for x_batch, y_batch in data_loader:
             x = x_batch.to(device=self.device)
@@ -118,10 +117,10 @@ class Trainer(object):
         y_true = torch.cat(y_true)
         y_pred = torch.cat(y_pred)
 
-        for score_fn in self.metrics.values():
-            metrics.append(score_fn(y_pred, y_true).mean(dim=0).cpu().item())
+        for key, score_fn in self.metrics.items():
+            metrics[key] = score_fn(y_pred, y_true).mean(dim=0).cpu().item()
         
-        return OrderedDict({k:v for k,v in zip(self.metrics.keys(), metrics)})
+        return metrics
 
 
 
@@ -143,7 +142,8 @@ class Logger(object):
         if not hasattr(self, 'history'):
             train_columns = [key for key in kwargs['train_metrics'].keys()]
             val_columns = ['val_'+key for key in kwargs['val_metrics'].keys()]
-            self.history = pd.DataFrame(columns=train_columns + val_columns)
+            self.ordered_metrics_keys = train_columns + val_columns
+            self.history = pd.DataFrame(columns=self.ordered_metrics_keys)
         
         time_elapsed = time.time() - self.time
 
@@ -153,16 +153,11 @@ class Logger(object):
         time_str = f'{round(time_elapsed, 1)}s' if time_elapsed < 10 else f'{int(time_elapsed + 0.5)}s'
         content.append(time_str)
         
-        self.metrics = OrderedDict()
+        self.metrics = kwargs['train_metrics']
+        self.metrics.update({('val_' + k): v for k, v in kwargs['val_metrics'].items()})
  
-        for k, v in kwargs['train_metrics'].items():
-            content.append(f'{k}: ' + '{:.4f}'.format(v)) 
-            self.metrics[k] = v
-
-        for k, v in kwargs['val_metrics'].items():
-            k = 'val_' + k
-            content.append(f'{k}: ' + '{:.4f}'.format(v))
-            self.metrics[k] = v
+        for k in self.ordered_metrics_keys:
+            content.append(f'{k}: ' + '{:.4f}'.format(self.metrics[k])) 
 
         self.metrics['lr'] = self.trainer.optimizer.param_groups[0]['lr']
         content.append('lr: {:.0e}'.format(self.metrics['lr']))

@@ -138,7 +138,7 @@ model.evaluate(x_test, y_test)
 ```
 
 ```txt
-OrderedDict([('loss', 0.121063925), ('acc', 0.9736)])
+{'loss': 0.121063925, 'acc': 0.9736}
 ```
 
 
