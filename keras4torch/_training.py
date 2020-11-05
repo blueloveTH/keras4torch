@@ -90,7 +90,7 @@ class Trainer(object):
             loss.backward()
             self.optimizer.step()
 
-            y_pred.append(y_batch_pred)
+            y_pred.append(y_batch_pred.detach())
             y_true.append(y)
 
         y_true = torch.cat(y_true)
