@@ -130,6 +130,8 @@ class Logger(object):
         self.verbose = 0
 
     def on_train_begin(self, train_loader, val_loader):
+        if self.verbose == 0:
+            return None
         if val_loader != None:
             print(f'Train on {len(train_loader.dataset)} samples, validate on {len(val_loader.dataset)} samples:')
         else:
