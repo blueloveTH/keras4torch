@@ -1,4 +1,3 @@
-from _typeshed import NoneType
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 import torchsummary
@@ -13,7 +12,7 @@ from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 from .utils import to_tensor
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 
 class Model(torch.nn.Module):
     """
@@ -124,7 +123,7 @@ class Model(torch.nn.Module):
         assert not (validation_data != None and validation_split != None)
         has_val = validation_data != None or validation_split != None
 
-        if not isinstance(sample_weight, NoneType):
+        if type(sample_weight) != type(None):
             sample_weight = to_tensor(sample_weight).float()
             train_set = TensorDataset(x, y, sample_weight)
         else:
