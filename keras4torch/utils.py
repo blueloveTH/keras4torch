@@ -9,6 +9,8 @@ def to_tensor(*args):
             arg = torch.from_numpy(arg.values)
         elif isinstance(arg, np.ndarray):
             arg = torch.from_numpy(arg)
+        elif isinstance(arg, list):
+            arg = torch.tensor(arg)
         elif not isinstance(arg, torch.Tensor):
             raise TypeError('Only DataFrame, ndarray and torch.Tensor are supported.')
 

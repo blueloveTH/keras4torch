@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import torch
 import time
 import pandas as pd
@@ -66,13 +65,24 @@ class Trainer(object):
 
     def train_precise_mode(self, data_loader):
         self.model.train()
-        for x_batch, y_batch in data_loader:
-            x = x_batch.to(device=self.device)
-            y = y_batch.to(device=self.device)
+
+        has_w = len(data_loader.dataset[0]) == 3
+
+        for t in data_loader:
+            x = t[0].to(device=self.device)
+            y = t[1].to(device=self.device)
             self.optimizer.zero_grad()
             y_pred = self.model.forward(x)
+
             loss = self.loss(y_pred, y)
-            loss.backward()
+
+            if has_w:
+                if loss.dim() == 0:
+                    raise ValueError("You should set the loss function with `reduction='none'` when using sample_weight.")
+                t[2] = t[2].to(device=self.device)
+                loss = loss * t[2]
+
+            loss.mean().backward()
             self.optimizer.step()
         
         return self.evaluate(data_loader)
@@ -80,45 +90,82 @@ class Trainer(object):
     def train_fast_mode(self, data_loader):
         self.model.train()
         metrics, y_true, y_pred = {}, [], []
+        sample_weight = []
 
-        for x_batch, y_batch in data_loader:
-            x = x_batch.to(device=self.device)
-            y = y_batch.to(device=self.device)
+        has_w = len(data_loader.dataset[0]) == 3
+
+        for t in data_loader:
+            x = t[0].to(device=self.device)
+            y = t[1].to(device=self.device)
             self.optimizer.zero_grad()
             y_batch_pred = self.model.forward(x)
+
             loss = self.loss(y_batch_pred, y)
-            loss.backward()
+
+            if has_w:
+                if loss.dim() == 0:
+                    raise ValueError("You should set the loss function with `reduction='none'` when using sample_weight.")
+                t[2] = t[2].to(device=self.device)
+                loss = loss * t[2]
+                sample_weight.append(t[2])
+
+            loss.mean().backward()
             self.optimizer.step()
 
             y_pred.append(y_batch_pred.detach())
             y_true.append(y)
-
+            
         y_true = torch.cat(y_true)
         y_pred = torch.cat(y_pred)
 
+        if has_w:
+            sample_weight = torch.cat(sample_weight)
+
         with torch.no_grad():
             for key, score_fn in self.metrics.items():
-                metrics[key] = score_fn(y_pred, y_true).mean(dim=0).cpu().item()
+                if has_w and 'loss' in key:
+                    loss = score_fn(y_pred, y_true)
+                    if loss.dim() == 0:
+                        raise ValueError("You should set the loss function with `reduction='none'` when using sample_weight.")
+                    metrics[key] = (loss * sample_weight).mean().cpu().item()
+                else:
+                    metrics[key] = score_fn(y_pred, y_true).mean().cpu().item()
 
         return metrics
 
     @torch.no_grad()
     def evaluate(self, data_loader):
         self.model.eval()
+    
+        has_w = len(data_loader.dataset[0]) == 3
 
         metrics, y_true, y_pred = {}, [], []
+        sample_weight = []
 
-        for x_batch, y_batch in data_loader:
-            x = x_batch.to(device=self.device)
-            y = y_batch.to(device=self.device)
+        for t in data_loader:
+            x = t[0].to(device=self.device)
+            y = t[1].to(device=self.device)
             y_true.append(y)
             y_pred.append(self.model.forward(x))
+
+            if has_w:
+                t[2] = t[2].to(device=self.device)
+                sample_weight.append(t[2])
 
         y_true = torch.cat(y_true)
         y_pred = torch.cat(y_pred)
 
+        if has_w:
+            sample_weight = torch.cat(sample_weight)
+
         for key, score_fn in self.metrics.items():
-            metrics[key] = score_fn(y_pred, y_true).mean(dim=0).cpu().item()
+            if has_w and 'loss' in key:
+                loss = score_fn(y_pred, y_true)
+                if loss.dim() == 0:
+                    raise ValueError("You should set the loss function with `reduction='none'` when using sample_weight.")
+                metrics[key] = (loss * sample_weight).mean().cpu().item()
+            else:
+                metrics[key] = score_fn(y_pred, y_true).mean().cpu().item()
         
         return metrics
 

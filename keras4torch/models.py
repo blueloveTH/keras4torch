@@ -1,3 +1,4 @@
+from _typeshed import NoneType
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 import torchsummary
@@ -12,7 +13,7 @@ from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 from .utils import to_tensor
 
-__version__ = '0.5.7'
+__version__ = '0.6.1'
 
 class Model(torch.nn.Module):
     """
@@ -112,6 +113,8 @@ class Model(torch.nn.Module):
                 callbacks=[],
                 verbose=1,
                 precise_train_metrics=False,
+                shuffle=True,
+                sample_weight=None
                 ):
         """Train the model for a fixed number of epochs (iterations on a dataset)."""
 
@@ -121,8 +124,12 @@ class Model(torch.nn.Module):
         assert not (validation_data != None and validation_split != None)
         has_val = validation_data != None or validation_split != None
 
-        train_set = TensorDataset(x, y)
-    
+        if not isinstance(sample_weight, NoneType):
+            sample_weight = to_tensor(sample_weight).float()
+            train_set = TensorDataset(x, y, sample_weight)
+        else:
+            train_set = TensorDataset(x, y)
+
         if validation_data != None:
             x_val, y_val = to_tensor(validation_data[0], validation_data[1])
             val_set = TensorDataset(x_val, y_val)
@@ -132,7 +139,7 @@ class Model(torch.nn.Module):
             train_length = len(train_set) - val_length
             train_set, val_set = random_split(train_set, [train_length, val_length], generator=torch.Generator().manual_seed(val_split_seed))
 
-        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=shuffle)
         val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False) if has_val else None
 
         # Training
