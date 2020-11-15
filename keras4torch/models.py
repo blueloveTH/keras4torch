@@ -12,7 +12,7 @@ from .losses import create_loss_by_name
 from .optimizers import create_optimizer_by_name
 from .utils import to_tensor
 
-__version__ = '0.6.2'
+__version__ = '0.6.3'
 
 class Model(torch.nn.Module):
     """
@@ -124,6 +124,8 @@ class Model(torch.nn.Module):
         has_val = validation_data != None or validation_split != None
 
         if type(sample_weight) != type(None):
+            if isinstance(sample_weight, list):
+                sample_weight = torch.tensor(sample_weight)
             sample_weight = to_tensor(sample_weight).float()
             train_set = TensorDataset(x, y, sample_weight)
         else:
