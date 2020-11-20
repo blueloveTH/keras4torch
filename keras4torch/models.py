@@ -105,6 +105,18 @@ class Model(torch.nn.Module):
         self.compiled = True
 
 
+    def fit_dl(self, train_loader, epochs,
+                val_loader=None,
+                callbacks=[],
+                verbose=1,
+                precise_train_metrics=False):
+
+        self.trainer.register_callbacks(callbacks)
+        history = self.trainer.run(train_loader, val_loader, max_epochs=epochs, verbose=verbose, precise_train_metrics=precise_train_metrics)
+
+        return history
+
+
     def fit(self, x, y, epochs, batch_size=32,
                 validation_split=None, val_split_seed=7,
                 validation_data=None,
@@ -149,16 +161,21 @@ class Model(torch.nn.Module):
         return history
 
     @torch.no_grad()
-    def evaluate(self, x, y, batch_size=32):
+    def evaluate(self, x, y=None, batch_size=32):
         """Return the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
         assert self.compiled
-        x, y = to_tensor(x, y)
-        val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False)
-        return self.trainer.evaluate(val_loader)
+        if not (y is None):
+            x, y = to_tensor(x, y)
+            val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False)
+            return self.trainer.evaluate(val_loader)
+        else:
+            return self.trainer.evaluate(x)
 
     @torch.no_grad()
     def predict(self, inputs, batch_size=32, device=None, output_numpy=True, activation=None):
-        """Generate output predictions for the input samples.\n\n    Computation is done in batches."""
+        """
+        Generate output predictions for the input samples.\n\n    Computation is done in batches.
+        """
         self._check_keras_layer()
 
         if device == None:
@@ -167,11 +184,15 @@ class Model(torch.nn.Module):
             else:
                 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        inputs = to_tensor(inputs)
         self.eval().to(device=device)
-        outputs = []
 
-        data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False)
+        if isinstance(inputs, DataLoader):
+            data_loader = inputs
+        else:
+            inputs = to_tensor(inputs)
+            data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False)
+
+        outputs = []
         for x_batch in data_loader:
             outputs.append(self.forward(x_batch[0].to(device=device)))
 
