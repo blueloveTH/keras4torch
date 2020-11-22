@@ -123,15 +123,18 @@ class Linear(KerasLayer):
 
 
 class _SqueezeAndExcitation1d(nn.Module):
-    def __init__(self, C_in, reduction_ratio=16):
+    def __init__(self, in_shape, reduction_ratio=16, channel_last=False):
         super(_SqueezeAndExcitation1d, self).__init__()
 
+        C_dim = 2 if channel_last else 1
+        L_dim = 1 if channel_last else 2
+        C_in = in_shape[C_dim]
+
         self.fc = nn.Sequential(
-            nn.AdaptiveAvgPool1d(1),                        # [N, C_in, 1]
-            nn.Flatten(),                                   # [N, C_in]
+            Lambda(lambda x: x.mean(dim=L_dim)),
             Linear(C_in // reduction_ratio), nn.ReLU(),
-            Linear(C_in), nn.Sigmoid(),                     # [N, C_in]
-            Lambda(lambda x: x.unsqueeze(-1))               # [N, C_in, 1]
+            Linear(C_in), nn.Sigmoid(),
+            Lambda(lambda x: x.unsqueeze(L_dim))
         )
     
     def forward(self, x):
@@ -141,9 +144,9 @@ class SqueezeAndExcitation1d(KerasLayer):
     """
     Squeeze-and-Excitation Module
 
-    input: [N, C_in, L_in]
+    input: [N, C_in, L_in] by default and [N, L_in, C_in] if `channel_last=True`
 
-    output: [N, C_in, L_in]
+    output: The same with the input
     """
     def build(self, in_shape):
-        return _SqueezeAndExcitation1d(in_shape[1], *self.args, **self.kwargs)
+        return _SqueezeAndExcitation1d(in_shape, *self.args, **self.kwargs)
