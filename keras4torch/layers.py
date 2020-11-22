@@ -120,3 +120,30 @@ class BatchNorm3d(KerasLayer):
 class Linear(KerasLayer):
     def build(self, in_shape):
         return nn.Linear(in_shape[1], *self.args, **self.kwargs)
+
+
+class _SqueezeAndExcitation1d(nn.Module):
+    def __init__(self, C_in, reduction_ratio=16):
+        super(_SqueezeAndExcitation1d, self).__init__()
+
+        self.fc = nn.Sequential(
+            nn.AdaptiveAvgPool1d(1),                        # [N, C_in, 1]
+            nn.Flatten(),                                   # [N, C_in]
+            Linear(C_in // reduction_ratio), nn.ReLU(),
+            Linear(C_in), nn.Sigmoid(),                     # [N, C_in]
+            Lambda(lambda x: x.unsqueeze(-1))               # [N, C_in, 1]
+        )
+    
+    def forward(self, x):
+        return x * self.fc(x)
+
+class SqueezeAndExcitation1d(KerasLayer):
+    """
+    Squeeze-and-Excitation Module
+
+    input: [N, C_in, L_in]
+
+    output: [N, C_in, L_in]
+    """
+    def build(self, in_shape):
+        return _SqueezeAndExcitation1d(in_shape[1], *self.args, **self.kwargs)
