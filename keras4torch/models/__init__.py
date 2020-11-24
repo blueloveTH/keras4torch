@@ -4,13 +4,15 @@ import torchsummary
 from collections import OrderedDict
 from torch.utils.data import random_split
 
-from ._training import Trainer
-from .layers import KerasLayer
-from .metrics import Metric
-from .metrics import create_metric_by_name
-from .losses import create_loss_by_name
-from .optimizers import create_optimizer_by_name
-from .utils import to_tensor
+from .._training import Trainer
+from ..layers import KerasLayer
+from ..metrics import Metric
+from ..metrics import create_metric_by_name
+from ..losses import create_loss_by_name
+from ..optimizers import create_optimizer_by_name
+from ..utils import to_tensor
+
+from .xwbank2020 import Conv1D_xwbank2020
 
 
 class Model(torch.nn.Module):

@@ -140,6 +140,34 @@ class _SqueezeAndExcitation1d(nn.Module):
     def forward(self, x):
         return x * self.fc(x)
 
+
+class GRU(KerasLayer):
+    def __init__(self, *args, return_sequences=True, batch_first=True, **kwargs):
+        super(GRU, self).__init__(*args, **kwargs)
+        self.batch_first = batch_first
+        self.return_sequences = return_sequences
+
+    # [batch, seq, feature] as input
+    def build(self, in_shape):
+        return nn.Sequential(
+            nn.GRU(in_shape[-1], *self.args, batch_first=self.batch_first, **self.kwargs),
+            Lambda(lambda x: x[0 if self.return_sequences else 1]),
+        )
+
+class LSTM(KerasLayer):
+    def __init__(self, *args, return_sequences=True, batch_first=True, **kwargs):
+        super(LSTM, self).__init__(*args, **kwargs)
+        self.batch_first = batch_first
+        self.return_sequences = return_sequences
+
+    # [batch, seq, feature] as input
+    def build(self, in_shape):
+        return nn.Sequential(
+            nn.LSTM(in_shape[-1], *self.args, batch_first=self.batch_first, **self.kwargs),
+            Lambda(lambda x: x[0 if self.return_sequences else 1]),
+        )
+
+
 class SqueezeAndExcitation1d(KerasLayer):
     """
     Squeeze-and-Excitation Module
