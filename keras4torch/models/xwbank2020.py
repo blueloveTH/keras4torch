@@ -1,4 +1,3 @@
-from ..models import Model
 import torch
 import torch.nn as nn
 from .. import layers
@@ -41,6 +40,8 @@ class inception_block(nn.Module):
         x = self.block(x)
         return x
 
+
+from ..models import Model
 
 def conv1d_xwbank2020(*args, **kwargs):
     """

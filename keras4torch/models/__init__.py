@@ -12,9 +12,6 @@ from ..losses import create_loss_by_name
 from ..optimizers import create_optimizer_by_name
 from ..utils import to_tensor
 
-from .xwbank2020 import Conv1D_xwbank2020
-
-
 class Model(torch.nn.Module):
     """
     `Model` wraps a `nn.Module` with training and inference features.
@@ -215,3 +212,10 @@ class Model(torch.nn.Module):
     def load_weights(self, filepath):
         """Equal to `model.load_state_dict(torch.load(filepath))`."""
         self.load_state_dict(torch.load(filepath))
+
+
+
+
+
+
+from .xwbank2020 import conv1d_xwbank2020
