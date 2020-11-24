@@ -13,7 +13,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/blueloveTH/keras4torch",
-    packages=['keras4torch'],
+    packages=setuptools.find_packages(),
     install_requires=['torch-summary==1.4.3', 'pandas'],
     classifiers=[
         "Programming Language :: Python :: 3",

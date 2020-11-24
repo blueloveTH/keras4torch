@@ -1,7 +1,7 @@
+from ..models import Model
 import torch
 import torch.nn as nn
 from .. import layers
-
 
 class res_block(nn.Module):
     def __init__(self, filters, kernel_size):
@@ -42,12 +42,18 @@ class inception_block(nn.Module):
         return x
 
 
-class Conv1D_xwbank2020(nn.Module):
+def conv1d_xwbank2020(*args, **kwargs):
     """
     Conv1D model for time series classification
+
+    params: num_classes
     """
+    return Model(_Conv1D_xwbank2020(*args, **kwargs))
+
+
+class _Conv1D_xwbank2020(nn.Module):
     def __init__(self, num_classes):
-        super(Conv1D_xwbank2020, self).__init__()
+        super(_Conv1D_xwbank2020, self).__init__()
 
         self.seq_3 = inception_block(kernel_size=3)
         self.seq_5 = inception_block(kernel_size=5)
