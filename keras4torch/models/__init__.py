@@ -96,7 +96,7 @@ class Model(torch.nn.Module):
                     m[tmp_m.__name__] = tmp_m
                 else:
                     raise TypeError('Unsupported type.')
-        else:
+        elif not (metrics is None):
             raise TypeError('Argument `metrics` should be either a dict or list.')
 
         self.to(device=device)

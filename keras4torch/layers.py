@@ -151,7 +151,7 @@ class GRU(KerasLayer):
     def build(self, in_shape):
         return nn.Sequential(
             nn.GRU(in_shape[-1], *self.args, batch_first=self.batch_first, **self.kwargs),
-            Lambda(lambda x: x[0 if self.return_sequences else 1]),
+            Lambda(lambda x: x[0] if self.return_sequences else x),
         )
 
 class LSTM(KerasLayer):
@@ -164,7 +164,7 @@ class LSTM(KerasLayer):
     def build(self, in_shape):
         return nn.Sequential(
             nn.LSTM(in_shape[-1], *self.args, batch_first=self.batch_first, **self.kwargs),
-            Lambda(lambda x: x[0 if self.return_sequences else 1]),
+            Lambda(lambda x: x[0] if self.return_sequences else x),
         )
 
 
