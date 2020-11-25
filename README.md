@@ -9,6 +9,8 @@
 + 对pytorch爱好者来说，Keras4Torch使你只需要几行代码就可以完成pytorch模型的训练、评估和推理。
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
+[![PyTorch Versions](https://img.shields.io/badge/PyTorch-1.6+-blue.svg)](https://pypi.org/project/keras4torch)
+[![Downloads](https://pepy.tech/badge/keras4torch)](https://pepy.tech/project/keras4torch)
 [![pypi](https://img.shields.io/pypi/v/keras4torch.svg)](https://pypi.python.org/pypi/keras4torch)
 [![License](https://img.shields.io/github/license/blueloveTH/keras4torch.svg)](https://github.com/blueloveTH/keras4torch/blob/master/LICENSE)
 
