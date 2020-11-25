@@ -178,3 +178,28 @@ class SqueezeAndExcitation1d(KerasLayer):
     """
     def build(self, in_shape):
         return _SqueezeAndExcitation1d(in_shape, *self.args, **self.kwargs)
+
+
+class Add(nn.Module):
+    def __init__(self):
+        super(Add, self).__init__()
+
+    def forward(self, x, y):
+        return x + y
+
+class Concatenate(nn.Module):
+    def __init__(self, dim):
+        super(Concatenate, self).__init__()
+        self.dim = dim
+
+    def forward(self, x):
+        return torch.cat(x, dim=self.dim)
+
+class Reshape(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super(Reshape, self).__init__()
+        self.args = args
+        self.kwargs = kwargs
+
+    def forward(self, x):
+        return x.reshape(*self.args, **self.kwargs)

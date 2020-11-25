@@ -20,6 +20,9 @@ class Model(torch.nn.Module):
     """
     def __init__(self, model):
         super(Model, self).__init__()
+        self._k4t_model_tag = 0
+        assert not hasattr(model, '_k4t_model_tag')
+
         self.model = model
         self.compiled = False
         self.built = False
@@ -40,11 +43,11 @@ class Model(torch.nn.Module):
     ########## keras-style methods below ##########
 
     @torch.no_grad()
-    def build(self, input_shape):
+    def build(self, input_shape, dtype=torch.float32):
         """Build the model when it contains `KerasLayer`."""
         if self.has_keras_layer:
             input_shape = [2] + list(input_shape)
-            probe_input = torch.zeros(size=input_shape)
+            probe_input = torch.zeros(size=input_shape).to(dtype=dtype)
             self.model.forward(probe_input)
         self.built = True
         return self
@@ -219,3 +222,4 @@ class Model(torch.nn.Module):
 
 
 from .xwbank2020 import conv1d_xwbank2020
+from ._functional import Functional
