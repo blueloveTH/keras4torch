@@ -18,7 +18,7 @@ Keras4Torch provides an easy way to train PyTorch models in Keras style. You can
 pip install keras4torch
 ```
 
-Keras4Torch supports Python 3.6 or newer.
+Keras4Torch supports PyTorch 1.6 or newer.
 
 
 

@@ -20,7 +20,7 @@
 pip install keras4torch
 ```
 
-支持Python 3.6及以上版本。
+支持PyTorch 1.6及以上。使用早期版本的torch可能导致部分功能不可用。
 
 
 
