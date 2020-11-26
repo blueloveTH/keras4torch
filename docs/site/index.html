@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="None">
+  
+  
+  <link rel="shortcut icon" href="img/favicon.ico">
+  <title>Keras4Torch Docs</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Home";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="js/jquery-2.1.1.min.js" defer></script>
+  <script src="js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href="." class="icon icon-home"> Keras4Torch Docs</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick Start</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#step1-preprocess-data">Step1: Preprocess Data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#step2-define-the-model">Step2: Define the Model</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#step3-config-optimizer-loss-and-metric">Step3: Config Optimizer, Loss and Metric</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#step4-training">Step4: Training</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#step5-plot-learning-curve">Step5: Plot Learning Curve</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#step6-evaluate-on-test-set">Step6: Evaluate on Test Set</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#communication">Communication</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">API References</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="api_references/models_api/">Models API</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="api_references/layers_api/">Layers API</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="api_references/callbacks_api/">Callbacks API</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="api_references/metrics/">Metrics</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="api_references/losses/">Losses</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="api_references/utilities/">Utilities</a>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Code Examples</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="code_examples/001/">001</a>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="code_examples/002/">002</a>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">Keras4Torch Docs</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/blueloveTH/keras4torch/edit/master/docs/index.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="keras4torch">Keras4Torch</h1>
+<p><strong>"An Easy-to-Use Wrapper for Training PyTorch Models❤"</strong></p>
+<p>Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use <code>keras4torch.Model</code> to warp any <code>torch.nn.Module</code> to integrate core training features. Once the model is wrapped, the training process can be done with only a few lines of code.</p>
+<ul>
+<li>
+<p>If you are a keras user, most of your training code can work well in Keras4Torch with little change.</p>
+</li>
+<li>
+<p>If you are a pytorch user, Keras4Torch can help you train pytorch models with far less code than basic pytorch.</p>
+</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<pre><code>pip install keras4torch
+</code></pre>
+<p>Keras4Torch supports PyTorch 1.6 or newer.</p>
+<h2 id="quick-start">Quick Start</h2>
+<p>Let's start with a simple example of MNIST!</p>
+<pre><code class="language-python">import torch
+import torchvision
+from torch import nn
+
+import keras4torch
+</code></pre>
+<h4 id="step1-preprocess-data">Step1: Preprocess Data</h4>
+<pre><code class="language-python">mnist = torchvision.datasets.MNIST(root='./', download=True)
+X, y = mnist.train_data, mnist.train_labels
+
+X = X.float() / 255.0    # scale the pixels to [0, 1]
+
+x_train, y_train = X[:40000], y[:40000]
+x_test, y_test = X[40000:], y[40000:]
+</code></pre>
+<h4 id="step2-define-the-model">Step2: Define the Model</h4>
+<pre><code class="language-python">model = torch.nn.Sequential(
+    nn.Flatten(),
+    nn.Linear(28*28, 512), nn.ReLU(),
+    nn.Linear(512, 128), nn.ReLU(),
+    nn.Linear(128, 10)
+)
+
+model = keras4torch.Model(model)    # attention this line
+</code></pre>
+<h4 id="step3-config-optimizer-loss-and-metric">Step3: Config Optimizer, Loss and Metric</h4>
+<pre><code class="language-python">model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
+</code></pre>
+<h4 id="step4-training">Step4: Training</h4>
+<pre><code class="language-python">history = model.fit(x_train, y_train,
+                    epochs=30,
+                    batch_size=512,
+                    validation_split=0.2,
+                    )
+</code></pre>
+<pre><code class="language-txt">Train on 32000 samples, validate on 8000 samples:
+Epoch 1/30 - 0.7s - loss: 0.7440 - acc: 0.8149 - val_loss: 0.3069 - val_acc: 0.9114 - lr: 1e-03
+Epoch 2/30 - 0.5s - loss: 0.2650 - acc: 0.9241 - val_loss: 0.2378 - val_acc: 0.9331 - lr: 1e-03
+Epoch 3/30 - 0.5s - loss: 0.1946 - acc: 0.9435 - val_loss: 0.1940 - val_acc: 0.9431 - lr: 1e-03
+Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9524 - lr: 1e-03
+... ...
+</code></pre>
+<h4 id="step5-plot-learning-curve">Step5: Plot Learning Curve</h4>
+<pre><code>history.plot(kind='line', y=['acc', 'val_acc'])
+</code></pre>
+<p><img src="../../imgs/learning_curve.svg"  /></p>
+<h4 id="step6-evaluate-on-test-set">Step6: Evaluate on Test Set</h4>
+<pre><code class="language-python">model.evaluate(x_test, y_test)
+</code></pre>
+<pre><code class="language-txt">{'loss': 0.121063925, 'acc': 0.9736}
+</code></pre>
+<h2 id="communication">Communication</h2>
+<p>If you have any problem when using Keras4Torch, please:</p>
+<ul>
+<li>open a <a href="https://github.com/blueloveTH/keras4torch/issues">Github Issue</a> </li>
+<li>send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.</li>
+</ul>
+<p>Keras4Torch is still under development.</p>
+<p>Any contribution to us would be more than welcome : )</p>
+<p>You can contribute new features by opening a Pull Request. (The details will be updated soon)</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="api_references/models_api/" class="btn btn-neutral float-right" title="Models API">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/blueloveTH/keras4torch/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+      
+        <span style="margin-left: 15px"><a href="api_references/models_api/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme.js" defer></script>
+      <script src="search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.1.2
+Build Date UTC : 2020-11-26 07:27:31.242237+00:00
+-->

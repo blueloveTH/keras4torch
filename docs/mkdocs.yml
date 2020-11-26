@@ -1,8 +1,15 @@
 site_name: Keras4Torch Docs
 nav:
     - Home: index.md
-    - API References: api_references.md
-    - Code Examples: code_examples.md
-    - About: about.md
+    - API References:
+        - Models API: api_references/models_api.md
+        - Layers API: api_references/layers_api.md
+        - Callbacks API: api_references/callbacks_api.md
+        - Metrics: api_references/metrics.md
+        - Losses: api_references/losses.md
+        - Utilities: api_references/utilities.md
+    - Code Examples:
+        - code_examples/001.md
+        - code_examples/002.md
 theme: readthedocs
 repo_url: https://github.com/blueloveTH/keras4torch
