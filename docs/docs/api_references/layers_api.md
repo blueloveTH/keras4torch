@@ -1,4 +1,4 @@
-## Layers API
+# Layers API
 
 `keras4torch.layers` provides `KerasLayer` for automatic shape inference as well as some other useful layers for quick experiment.
 
