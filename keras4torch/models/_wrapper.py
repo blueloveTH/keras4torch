@@ -162,50 +162,43 @@ class Model(torch.nn.Module):
         return history
 
     @torch.no_grad()
-    def evaluate(self, x, y=None, batch_size=32):
+    def evaluate(self, x, y, batch_size=32):
         """Return the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
+        x, y = to_tensor(x, y)
+        val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False)
+        return self.evaluate_dl(val_loader)
+
+    @torch.no_grad()
+    def evaluate_dl(self, data_loader):
         assert self.compiled
-        if not (y is None):
-            x, y = to_tensor(x, y)
-            val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False)
-            return self.trainer.evaluate(val_loader)
-        else:
-            return self.trainer.evaluate(x)
+        return self.trainer.evaluate(data_loader)
+
+    @torch.no_grad()
+    def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None):
+        self._check_keras_layer()
+        if device == None:
+            if self.compiled:
+                device = self.trainer.device
+            else:
+                device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.eval().to(device=device)
+
+        outputs = [self.forward(x_batch[0].to(device=device)) for x_batch in data_loader]
+        outputs = torch.cat(outputs, dim=0)
+
+        if activation != None:
+            outputs = activation(outputs)
+
+        return outputs.cpu().numpy() if output_numpy else outputs
 
     @torch.no_grad()
     def predict(self, inputs, batch_size=32, device=None, output_numpy=True, activation=None):
         """
         Generate output predictions for the input samples.\n\n    Computation is done in batches.
         """
-        self._check_keras_layer()
-
-        if device == None:
-            if self.compiled:
-                device = self.trainer.device
-            else:
-                device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-        self.eval().to(device=device)
-
-        if isinstance(inputs, DataLoader):
-            data_loader = inputs
-        else:
-            inputs = to_tensor(inputs)
-            data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False)
-
-        outputs = []
-        for x_batch in data_loader:
-            outputs.append(self.forward(x_batch[0].to(device=device)))
-
-        outputs = torch.cat(outputs, dim=0)
-
-        if activation != None:
-            outputs = activation(outputs)
-
-        if output_numpy:
-            return outputs.cpu().numpy()
-        else:
-            return outputs
+        inputs = to_tensor(inputs)
+        data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False)
+        return self.predict_dl(data_loader, device=device, output_numpy=output_numpy, activation=activation)
 
     def save_weights(self, filepath):
         """Equal to `torch.save(model.state_dict(), filepath)`."""

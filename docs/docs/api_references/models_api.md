@@ -10,9 +10,9 @@ There are two ways to instantiate a `keras4torch.Model`.
 
 + compile
 + fit
-+ fit_dl
 + evaluate
 + predict
++ (for DataLoader) fit_dl, evaluate_dl, predict_dl
 
 #### Saving & Serialization
 
