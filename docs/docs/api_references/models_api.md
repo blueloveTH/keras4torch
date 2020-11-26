@@ -1,8 +1,8 @@
-## Models API
+# Models API
 
 There are two ways to instantiate a `keras4torch.Model`. 
 
-### 1 - Wrap a PyTorch Module
+## 1 - Wrap a PyTorch module
 
 `keras4torch.Model` wraps a `torch.nn.Module` to integrate training and inference features.
 
@@ -26,7 +26,7 @@ There are two ways to instantiate a `keras4torch.Model`.
 
 
 
-### 2 - Use Functional API (Beta)
+## 2 - Use Functional API (Beta)
 
 Functional API allows you to build layers by functional programming.
 

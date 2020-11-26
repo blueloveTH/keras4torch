@@ -33,7 +33,7 @@ The argument `input_shape` should not include batch_size dimension.
 
 ### Custom KerasLayer
 
-In fact, what a `KerasLayer` do is to delay the instantiation to the first `module.forward()` call, thus it can get the output shape from its previous layer and decide how many channels should be created.
+In fact, what a `KerasLayer` do is to delay the module instantiation to the first `module.forward()` call, thus it can get the output shape from its previous layer and decide how many channels should be created.
 
 To write your own `KerasLayer` for automatic shape inference, you need to subclass `KerasLayer` and implement its abstract method `build()`, as the source code shown below.
 

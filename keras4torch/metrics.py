@@ -8,9 +8,6 @@ class Metric():
     def __init__(self) -> None:
         pass
 
-    def set_device(self, device):
-        self.device = device
-
     @abstractclassmethod
     def get_abbr(self) -> str:
         pass
@@ -52,7 +49,7 @@ class SklearnMetric(Metric):
             y_pred = self.activation(y_pred)
         y_true = y_true.cpu().numpy()
         y_pred = y_pred.cpu().numpy()
-        return torch.tensor(self.score_fn(y_true, y_pred), dtype=torch.float32, device=self.device)
+        return torch.tensor(self.score_fn(y_true, y_pred), dtype=torch.float32, device=y_pred.device)
 
     @abstractclassmethod
     def get_score_fn(self):

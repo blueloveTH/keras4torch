@@ -94,7 +94,6 @@ class Model(torch.nn.Module):
                     tmp_m = create_metric_by_name(tmp_m)
                 if isinstance(tmp_m, Metric):
                     m[tmp_m.get_abbr()] = tmp_m
-                    tmp_m.set_device(device)
                 elif hasattr(tmp_m, '__call__'):
                     m[tmp_m.__name__] = tmp_m
                 else:
