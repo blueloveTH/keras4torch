@@ -41,16 +41,27 @@ class inception_block(nn.Module):
         return x
 
 
-from ._wrapper import Model
+from ..models._wrapper import Model
+from ..losses import CELoss
 
-def conv1d_xwbank2020(*args, **kwargs):
+def conv1d_xwbank2020(input_shape, num_classes, compile=False):
     """
     Conv1D model for time series classification
-
-    params: num_classes
     """
-    return Model(_Conv1D_xwbank2020(*args, **kwargs))
+    model = Model(_Conv1D_xwbank2020(num_classes=num_classes))
+    model.build(input_shape)
 
+    def weights_init(m):
+        if isinstance(m, torch.nn.Linear) or isinstance(m, torch.nn.Conv1d):
+            nn.init.xavier_uniform_(m.weight.data)
+            nn.init.zeros_(m.bias.data)
+
+    model.apply(weights_init)
+
+    if compile:
+        model.compile(optimizer='adam', loss=CELoss(label_smoothing=0.1), metrics=['acc'])
+
+    return model
 
 class _Conv1D_xwbank2020(nn.Module):
     def __init__(self, num_classes):
