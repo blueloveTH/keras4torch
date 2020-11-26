@@ -5,10 +5,9 @@
 # Required
 version: 2
 
-
 # Build documentation with MkDocs
 mkdocs:
-  configuration: docs/mkdocs.yml
+  configuration: mkdocs.yml
 
 # Optionally build your docs in additional formats such as PDF
 formats:
@@ -20,4 +19,3 @@ python:
   version: 3.7
   install:
     - requirements: docs/requirements.txt
-    - path: docs
