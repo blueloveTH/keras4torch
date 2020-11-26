@@ -130,3 +130,7 @@ def create_metric_by_name(name):
     if name not in _metrics_dict:
         raise KeyError(f'Invalid metric name, we support {list(_metrics_dict.keys())}.')
     return _metrics_dict[name]()
+
+
+__all__ = ['Metric', 'Accuracy', 'categorical_accuracy', 'binary_accuracy',
+                'SklearnMetric', 'ROC_AUC', 'F1_Score', 'MeanSquaredError', 'MeanAbsoluteError', 'RootMeanSquaredError']

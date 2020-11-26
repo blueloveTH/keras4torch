@@ -16,3 +16,5 @@ def create_optimizer_by_name(name, *args):
     else:
         lr = 1e-3
     return _optimizers_dict[name](*args, lr)
+
+__all__ = []

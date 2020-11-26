@@ -41,3 +41,5 @@ def create_loss_by_name(name):
     if name not in _losses_dict:
         raise KeyError(f'Invalid loss name, we support {list(_losses_dict.keys())}.')
     return _losses_dict[name]()
+
+__all__ = ['CELoss']

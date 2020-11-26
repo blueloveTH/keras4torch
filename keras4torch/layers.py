@@ -3,8 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from abc import abstractclassmethod
 
-from torch.nn.modules.conv import Conv1d
-
 class Lambda(nn.Module):
     """Wrap a function as `nn.Module`."""
     def __init__(self, fn):

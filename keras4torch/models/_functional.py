@@ -1,25 +1,23 @@
 import torch
 from ._wrapper import Model
 
-class _FunctionalLayer(object):
+class SymbolicTensor(object):
     def __init__(self, module, inputs):
-        #super(_FunctionalLayer, self).__init__()
-        self.module = module
+        self._module = module
         if not isinstance(inputs, list):
             inputs = [inputs]
-        self.inputs = inputs
+        self._inputs = inputs
     
     @property
     def shape(self):
-        return self.forward().shape
+        return torch.Size([-1] + list(self.eval().shape[1:]))
 
-    def forward(self):
-        args = [i.forward() for i in self.inputs]
-        return self.module(*args)
+    def eval(self):
+        args = [i.eval() for i in self._inputs]
+        return self._module(*args)
 
-class _FunctionalInput(object):
+class FunctionalInput(object):
     def __init__(self, input_shape, dtype=torch.float32):
-        #super(_FunctionalInput, self).__init__()
         self._input_shape = torch.Size(input_shape)
         self._dtype = dtype
         self._x = torch.zeros(size=[2] + list(self._input_shape))
@@ -27,12 +25,13 @@ class _FunctionalInput(object):
     def prepare(self, x):
         self._x = x
 
-    def forward(self):
+    def eval(self):
         return self._x
 
     @property
     def shape(self):
-        return self._input_shape
+        return torch.Size([-1] + list(self._input_shape))
+
     @property
     def dtype(self):
         return self._dtype
@@ -40,28 +39,25 @@ class _FunctionalInput(object):
 class Functional(torch.nn.Module):
     def __init__(self):
         super(Functional, self).__init__()
-        self.input_layer = None
-        self.output_layer = None
-        self.module_list = []
+        self._inputs = None
+        self._outputs = None
+        self._module_list = []
 
     def input(self, input_shape, dtype=torch.float32):
-        assert self.input_layer is None
-        self.input_layer = _FunctionalInput(input_shape=input_shape, dtype=dtype)
-        return self.input_layer
+        assert self._inputs is None
+        self._inputs = FunctionalInput(input_shape=input_shape, dtype=dtype)
+        return self._inputs
         
     def call(self, module, inputs):
-        layer = _FunctionalLayer(module, inputs)
-        self.module_list.append(module)
-        return layer
+        self._module_list.append(module)
+        return SymbolicTensor(module, inputs)
 
-    def build(self, output_layer):
-        assert self.output_layer is None
-        self.output_layer = output_layer
-        self.module_list = torch.nn.ModuleList(self.module_list)
-        model = Model(self)
-        model.build(self.input_layer.shape, dtype=self.input_layer.dtype)
-        return model
+    def build(self, outputs):
+        assert self._outputs is None
+        self._outputs = outputs
+        self._module_list = torch.nn.ModuleList(self._module_list)
+        return Model(self).build(self._inputs._input_shape, dtype=self._inputs._dtype)
 
     def forward(self, x):
-        self.input_layer.prepare(x)
-        return self.output_layer.forward()
+        self._inputs.prepare(x)
+        return self._outputs.eval()
