@@ -1,0 +1,8 @@
+site_name: Keras4Torch Docs
+nav:
+    - Home: index.md
+    - API References: api_references.md
+    - Code Examples: code_examples.md
+    - About: about.md
+theme: readthedocs
+repo_url: https://github.com/blueloveTH/keras4torch
