@@ -88,7 +88,7 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 history.plot(kind='line', y=['acc', 'val_acc'])
 ```
 
-<img src="../../imgs/learning_curve.svg"  />
+![learning_curve.svg](imgs/learning_curve.svg)
 
 #### Step6: Evaluate on Test Set
 
