@@ -1,19 +1,24 @@
 import torch
+import copy
 from ._wrapper import Model
 
 class SymbolicTensor(object):
-    def __init__(self, module, inputs):
+    def __init__(self, module, *inputs):
         self._module = module
-        if not isinstance(inputs, list):
-            inputs = [inputs]
         self._inputs = inputs
     
     @property
     def shape(self):
         return torch.Size([-1] + list(self.eval().shape[1:]))
 
+    def _deep_eval(self, args):
+        if isinstance(args, list):
+            return [self._deep_eval(i) for i in args]
+        else:
+            return args.eval()       # leaf
+
     def eval(self):
-        args = [i.eval() for i in self._inputs]
+        args = [self._deep_eval(i) for i in self._inputs]
         return self._module(*args)
 
 class FunctionalInput(object):
@@ -48,9 +53,9 @@ class Functional(torch.nn.Module):
         self._inputs = FunctionalInput(input_shape=input_shape, dtype=dtype)
         return self._inputs
         
-    def call(self, module, inputs):
+    def call(self, module, *inputs):
         self._module_list.append(module)
-        return SymbolicTensor(module, inputs)
+        return SymbolicTensor(module, *inputs)
 
     def build(self, outputs):
         assert self._outputs is None

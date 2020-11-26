@@ -182,8 +182,8 @@ class Add(nn.Module):
     def __init__(self):
         super(Add, self).__init__()
 
-    def forward(self, x, y):
-        return x + y
+    def forward(self, x):
+        return sum(x)
 
 class Concatenate(nn.Module):
     def __init__(self, dim):
