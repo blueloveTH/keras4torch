@@ -1,5 +1,5 @@
 import torch
-from . import Model
+from ._wrapper import Model
 
 class _FunctionalLayer(object):
     def __init__(self, module, inputs):

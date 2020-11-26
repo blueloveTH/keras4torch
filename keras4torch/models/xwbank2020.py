@@ -41,7 +41,7 @@ class inception_block(nn.Module):
         return x
 
 
-from ..models import Model
+from ._wrapper import Model
 
 def conv1d_xwbank2020(*args, **kwargs):
     """
