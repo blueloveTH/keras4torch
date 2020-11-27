@@ -46,12 +46,12 @@ inputs = fn.input([64])
 
 `fn.input(input_shape, dtype)` returns a symbolic tensor which has a shape of [batch_size, 64].
 
-#### Step3: Call the layers
+#### Step3: Connect layers and inputs
 
 ```python
-seq = fn.call(k4t.layers.Linear(64), inputs)
-seq = fn.call(k4t.layers.Add(), [seq, inputs])
-output = fn.call(nn.Softmax(-1), seq)
+seq = fn(k4t.layers.Linear(64), inputs)
+seq = fn(k4t.layers.Add(), [seq, inputs])
+output = fn(nn.Softmax(-1), seq)
 ```
 
 This code block generates a residual connection between the original input and the output of the Linear layer, and defines a softmax activation as the final output.
@@ -59,7 +59,7 @@ This code block generates a residual connection between the original input and t
 #### Step4: Build the model
 
 ```python
-model = fn.build(output)
+model = fn.build_model(output)
 ```
 
 This line will build the functional object and convert it to `keras4torch.Model`. You can use it for training at once.

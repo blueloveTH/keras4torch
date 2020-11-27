@@ -1,5 +1,4 @@
 import torch
-import copy
 from ._wrapper import Model
 
 class SymbolicTensor(object):
@@ -21,7 +20,7 @@ class SymbolicTensor(object):
         args = [self._deep_eval(i) for i in self._inputs]
         return self._module(*args)
 
-class FunctionalInput(object):
+class SymbolicTensorInput(object):
     def __init__(self, input_shape, dtype=torch.float32):
         self._input_shape = torch.Size(input_shape)
         self._dtype = dtype
@@ -41,28 +40,48 @@ class FunctionalInput(object):
     def dtype(self):
         return self._dtype
 
-class Functional(torch.nn.Module):
+class _FunctionalModule(torch.nn.Module):
+    def __init__(self):
+        super(_FunctionalModule, self).__init__()
+        self.inputs = None
+        self.outputs = None
+    
+    def set_modules(self, modules):
+        assert self.inputs and self.outputs
+        self.module_list = torch.nn.ModuleList(modules)
+
+    @property
+    def input_shape(self):
+        return self.inputs._input_shape
+    
+    @property
+    def input_dtype(self):
+        return self.inputs._dtype
+
+    def forward(self, x):
+        self.inputs.prepare(x)
+        return self.outputs.eval()
+
+class Functional(object):
     def __init__(self):
         super(Functional, self).__init__()
-        self._inputs = None
-        self._outputs = None
+        self._fn_module = _FunctionalModule()
         self._module_list = []
 
     def input(self, input_shape, dtype=torch.float32):
-        assert self._inputs is None
-        self._inputs = FunctionalInput(input_shape=input_shape, dtype=dtype)
-        return self._inputs
+        assert self._fn_module.inputs is None
+        self._fn_module.inputs = SymbolicTensorInput(input_shape, dtype)
+        return self._fn_module.inputs
         
-    def call(self, module, *inputs):
+    def __call__(self, module, *inputs):
         self._module_list.append(module)
         return SymbolicTensor(module, *inputs)
 
-    def build(self, outputs):
-        assert self._outputs is None
-        self._outputs = outputs
-        self._module_list = torch.nn.ModuleList(self._module_list)
-        return Model(self).build(self._inputs._input_shape, dtype=self._inputs._dtype)
-
-    def forward(self, x):
-        self._inputs.prepare(x)
-        return self._outputs.eval()
+    def build_model(self, outputs):
+        assert self._fn_module.outputs is None
+        self._fn_module.outputs = outputs
+        self._fn_module.set_modules(self._module_list)
+        return Model(self._fn_module).build(
+            self._fn_module.input_shape,
+            dtype=self._fn_module.input_dtype
+        )
