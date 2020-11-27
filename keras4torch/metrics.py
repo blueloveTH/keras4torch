@@ -45,11 +45,12 @@ class SklearnMetric(Metric):
         self.score_fn = self.get_score_fn()
 
     def __call__(self, y_pred, y_true):
+        _device = y_pred.device
         if self.activation != None:
             y_pred = self.activation(y_pred)
         y_true = y_true.cpu().numpy()
         y_pred = y_pred.cpu().numpy()
-        return torch.tensor(self.score_fn(y_true, y_pred), dtype=torch.float32, device=y_pred.device)
+        return torch.tensor(self.score_fn(y_true, y_pred), dtype=torch.float32, device=_device)
 
     @abstractclassmethod
     def get_score_fn(self):
