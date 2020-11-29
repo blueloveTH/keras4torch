@@ -3,7 +3,6 @@ from torch.utils.data import DataLoader, TensorDataset
 import torchsummary
 from collections import OrderedDict
 from torch.utils.data import random_split
-from multiprocessing import cpu_count
 
 from .._training import Trainer
 from ..layers import KerasLayer
@@ -41,9 +40,6 @@ class Model(torch.nn.Module):
         """Count the total number of scalars composing the weights."""
         return sum([p.numel() for p in self.parameters()])
 
-    @staticmethod
-    def get_max_num_workers(self) -> int:
-        return cpu_count() - 1
 
     ########## keras-style methods below ##########
 
@@ -131,7 +127,7 @@ class Model(torch.nn.Module):
                 precise_train_metrics=False,
                 shuffle=True,
                 sample_weight=None,
-                num_workers=-1
+                num_workers=0
                 ):
         """Train the model for a fixed number of epochs (iterations on a dataset)."""
 
@@ -158,8 +154,6 @@ class Model(torch.nn.Module):
             train_length = len(train_set) - val_length
             train_set, val_set = random_split(train_set, [train_length, val_length], generator=torch.Generator().manual_seed(val_split_seed))
 
-        if num_workers == -1:
-            num_workers = self.get_max_num_workers()
         train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=shuffle, pin_memory=True, num_workers=num_workers)
         val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=num_workers) if has_val else None
 
@@ -170,11 +164,9 @@ class Model(torch.nn.Module):
         return history
 
     @torch.no_grad()
-    def evaluate(self, x, y, batch_size=32, num_workers=-1):
+    def evaluate(self, x, y, batch_size=32, num_workers=0):
         """Return the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
         x, y = to_tensor(x, y)
-        if num_workers == -1:
-            num_workers = self.get_max_num_workers()
         val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=num_workers)
         return self.evaluate_dl(val_loader)
 
@@ -202,12 +194,10 @@ class Model(torch.nn.Module):
         return outputs.cpu().numpy() if output_numpy else outputs
 
     @torch.no_grad()
-    def predict(self, inputs, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=-1):
+    def predict(self, inputs, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0):
         """
         Generate output predictions for the input samples.\n\n    Computation is done in batches.
         """
-        if num_workers == -1:
-            num_workers = self.get_max_num_workers()
         inputs = to_tensor(inputs)
         data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=num_workers)
         return self.predict_dl(data_loader, device=device, output_numpy=output_numpy, activation=activation)
