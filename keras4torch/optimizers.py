@@ -12,7 +12,7 @@ def _create_optimizer(i, model_parameters):
         name = i.lower()
         if name not in _optimizers_dict:
             raise KeyError(f'Invalid metric name, we support {list(_optimizers_dict.keys())}.')
-        optim_class, lr = *_optimizers_dict[name]
+        optim_class, lr = _optimizers_dict[name]
         return optim_class(model_parameters, lr=lr)
     else:
         return i
