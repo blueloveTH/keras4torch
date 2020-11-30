@@ -40,7 +40,7 @@ def _create_loss(i):
     if isinstance(i, str):
         name = i.lower()
         if name not in _losses_dict:
-            raise KeyError(f'Invalid loss name, we support {list(_losses_dict.keys())}.')
+            raise KeyError(f'Invalid name, we support {list(_losses_dict.keys())}.')
         return _losses_dict[name]()
     else:
         return i

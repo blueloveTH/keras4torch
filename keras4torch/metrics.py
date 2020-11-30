@@ -127,7 +127,7 @@ def _create_metric(i):
     if isinstance(i, str):
         name = i.lower()
         if name not in _metrics_dict:
-            raise KeyError(f'Invalid metric name, we support {list(_metrics_dict.keys())}.')
+            raise KeyError(f'Invalid name, we support {list(_metrics_dict.keys())}.')
         return _metrics_dict[name]()
     else:
         return i

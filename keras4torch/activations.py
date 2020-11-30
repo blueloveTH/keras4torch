@@ -18,7 +18,7 @@ def _create_activation(i):
     if isinstance(i, str):
         name = i.lower()
         if name not in _activations_dict:
-            raise KeyError(f'Invalid metric name, we support {list(_activations_dict.keys())}.')
+            raise KeyError(f'Invalid name, we support {list(_activations_dict.keys())}.')
         return deepcopy(_activations_dict[name])
     else:
         return i

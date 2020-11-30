@@ -11,7 +11,7 @@ def _create_optimizer(i, model_parameters):
     if isinstance(i, str):
         name = i.lower()
         if name not in _optimizers_dict:
-            raise KeyError(f'Invalid metric name, we support {list(_optimizers_dict.keys())}.')
+            raise KeyError(f'Invalid name, we support {list(_optimizers_dict.keys())}.')
         optim_class, lr = _optimizers_dict[name]
         return optim_class(model_parameters, lr=lr)
     else:
