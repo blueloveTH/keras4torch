@@ -36,10 +36,13 @@ class CELoss(object):
         return loss
 
 
-def create_loss_by_name(name):
-    name = name.lower()
-    if name not in _losses_dict:
-        raise KeyError(f'Invalid loss name, we support {list(_losses_dict.keys())}.')
-    return _losses_dict[name]()
+def _create_loss(i):
+    if isinstance(i, str):
+        name = i.lower()
+        if name not in _losses_dict:
+            raise KeyError(f'Invalid loss name, we support {list(_losses_dict.keys())}.')
+        return _losses_dict[name]()
+    else:
+        return i
 
 __all__ = ['CELoss']

@@ -8,13 +8,13 @@ class res_block(nn.Module):
 
         self.conv1d = nn.Sequential(
             layers.Conv1d(filters, 1),
-            nn.ReLU(), layers.BatchNorm1d(),
+            nn.ReLU(inplace=True), layers.BatchNorm1d(),
 
             layers.Conv1d(filters, kernel_size, padding=kernel_size//2),
-            nn.ReLU(), layers.BatchNorm1d(),
+            nn.ReLU(inplace=True), layers.BatchNorm1d(),
 
             layers.Conv1d(filters, 1),
-            nn.ReLU(), layers.BatchNorm1d(),
+            nn.ReLU(inplace=True), layers.BatchNorm1d(),
         )
 
         self.shortcut = layers.Conv1d(filters, 1)
@@ -72,8 +72,8 @@ class _Conv1D_xwbank2020(nn.Module):
         self.seq_7 = inception_block(kernel_size=7)
         
         self.dense = nn.Sequential(
-            layers.Linear(512), nn.ReLU(), nn.Dropout(0.3),
-            layers.Linear(128), nn.ReLU(), nn.Dropout(0.3),
+            layers.Linear(512), nn.ReLU(inplace=True), nn.Dropout(0.3),
+            layers.Linear(128), nn.ReLU(inplace=True), nn.Dropout(0.3),
             layers.Linear(num_classes)
         )
 

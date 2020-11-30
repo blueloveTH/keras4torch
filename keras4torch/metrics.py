@@ -123,11 +123,14 @@ _metrics_dict = OrderedDict({
     'f1_score': F1_Score,
 })
 
-def create_metric_by_name(name):
-    name = name.lower()
-    if name not in _metrics_dict:
-        raise KeyError(f'Invalid metric name, we support {list(_metrics_dict.keys())}.')
-    return _metrics_dict[name]()
+def _create_metric(i):
+    if isinstance(i, str):
+        name = i.lower()
+        if name not in _metrics_dict:
+            raise KeyError(f'Invalid metric name, we support {list(_metrics_dict.keys())}.')
+        return _metrics_dict[name]()
+    else:
+        return i
 
 
 __all__ = ['Metric', 'Accuracy', 'categorical_accuracy', 'binary_accuracy',

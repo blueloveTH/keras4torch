@@ -7,9 +7,9 @@ from torch.utils.data import random_split
 from .._training import Trainer
 from ..layers import KerasLayer
 from ..metrics import Metric
-from ..metrics import create_metric_by_name
-from ..losses import create_loss_by_name
-from ..optimizers import create_optimizer_by_name
+from ..metrics import _create_metric
+from ..losses import _create_loss
+from ..optimizers import _create_optimizer
 from ..utils import to_tensor
 
 class Model(torch.nn.Module):
@@ -81,18 +81,15 @@ class Model(torch.nn.Module):
         if device == None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
             
-        if isinstance(loss, str):
-            loss = create_loss_by_name(loss)
-        if isinstance(optimizer, str):
-            optimizer = create_optimizer_by_name(optimizer, self.parameters())
+        loss = _create_loss(loss)
+        optimizer = _create_optimizer(optimizer, self.parameters())
 
         m = OrderedDict({'loss': loss})
         if isinstance(metrics, dict):
             m.update(metrics)
         elif isinstance(metrics, list):
             for tmp_m in metrics:
-                if isinstance(tmp_m, str):
-                    tmp_m = create_metric_by_name(tmp_m)
+                tmp_m = _create_metric(tmp_m)
                 if isinstance(tmp_m, Metric):
                     m[tmp_m.get_abbr()] = tmp_m
                 elif hasattr(tmp_m, '__call__'):
