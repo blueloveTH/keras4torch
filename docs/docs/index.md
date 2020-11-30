@@ -66,7 +66,7 @@ model = torch.nn.Sequential(
 )
 ```
 
-A model contains `KerasLayer` needs an extra `.build(input_shape)` operation.
+A model containing `KerasLayer` needs an extra `.build(input_shape)` operation.
 
 ```python
 model = k4t.Model(model).build([28, 28])
