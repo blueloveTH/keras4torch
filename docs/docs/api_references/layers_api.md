@@ -16,7 +16,7 @@ The built-in KerasLayer is a replacement for some native torch module. The follo
 + BatchNorm2d
 + BatchNorm3d
 
-Compared with native torch modules, what you need to change is omitting the first shape parameter. For example, `nn.Linear(128, 512)` must be rewritten as `keras4torch.layers.Linear(512)`; `nn.Conv1d(32, 64, kernel_size=3)` must be rewritten as `keras4torch.layers.Conv1d(64, kernel_size=3)`.
+Compared with native torch modules, what you need to change is omitting the first shape parameter. For example, `nn.Linear(128, 512)` must be rewritten as `k4t.layers.Linear(512)`; `nn.Conv1d(32, 64, kernel_size=3)` must be rewritten as `k4t.layers.Conv1d(64, kernel_size=3)`.
 
 
 

@@ -9,7 +9,7 @@
 [![Documentation Status](https://readthedocs.org/projects/keras4torch/badge/?version=latest)](https://keras4torch.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/github/license/blueloveTH/keras4torch.svg)](https://github.com/blueloveTH/keras4torch/blob/master/LICENSE)
 
-Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. Once the model is wrapped, the training process can be done with only a few lines of code.
+Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. With this framework, the training process can be considerably simplified.
 
 + If you are a keras user, most of your training code can work well in Keras4Torch with little change.
 
@@ -34,7 +34,7 @@ import torch
 import torchvision
 from torch import nn
 
-import keras4torch
+import keras4torch as k4t
 ```
 
 #### Step1: Preprocess Data
@@ -59,14 +59,27 @@ model = torch.nn.Sequential(
     nn.Linear(128, 10)
 )
 
-model = keras4torch.Model(model)    # attention this line
+model = k4t.Model(model)    # attention this line
 ```
 
-#### Step3: Config Optimizer, Loss and Metric
+Alternatively, You can use `KerasLayer` for automatic shape inference, which can free you from calculating the input channels. Here is an equivalent to the model above.
 
 ```python
-model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
+model = torch.nn.Sequential(
+    nn.Flatten(),
+    k4t.layers.Linear(512), nn.ReLU(),
+    k4t.layers.Linear(128), nn.ReLU(),
+    k4t.layers.Linear(10)
+)
 ```
+
+A model contains `KerasLayer` needs an extra `.build(input_shape)` operation.
+
+```python
+model = k4t.Model(model).build([28, 28])
+```
+
+Keras4Torch also provides functional API like Keras. Click [here](https://keras4torch.readthedocs.io/en/latest/api_references/models_api/#2-use-functional-api-beta) for more details.
 
 #### Step4: Training
 

@@ -2,9 +2,7 @@
 
 **"An Easy-to-Use Wrapper for Training PyTorch Models❤"**
 
-
-
-Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. Once the model is wrapped, the training process can be done with only a few lines of code.
+Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. With this framework, the training process can be considerably simplified.
 
 + If you are a keras user, most of your training code can work well in Keras4Torch with little change.
 
@@ -29,7 +27,7 @@ import torch
 import torchvision
 from torch import nn
 
-import keras4torch
+import keras4torch as k4t
 ```
 
 #### Step1: Preprocess Data
@@ -54,8 +52,27 @@ model = torch.nn.Sequential(
     nn.Linear(128, 10)
 )
 
-model = keras4torch.Model(model)    # attention this line
+model = k4t.Model(model)    # attention this line
 ```
+
+Alternatively, You can use `KerasLayer` for automatic shape inference, which can free you from calculating the input channels. Here is an equivalent to the model above.
+
+```python
+model = torch.nn.Sequential(
+    nn.Flatten(),
+    k4t.layers.Linear(512), nn.ReLU(),
+    k4t.layers.Linear(128), nn.ReLU(),
+    k4t.layers.Linear(10)
+)
+```
+
+A model contains `KerasLayer` needs an extra `.build(input_shape)` operation.
+
+```python
+model = k4t.Model(model).build([28, 28])
+```
+
+Keras4Torch also provides functional API like Keras. Click [here](https://keras4torch.readthedocs.io/en/latest/api_references/models_api/#2-use-functional-api-beta) for more details.
 
 #### Step3: Config Optimizer, Loss and Metric
 
@@ -109,8 +126,6 @@ If you have any problem when using Keras4Torch, please:
 + open a [Github Issue](https://github.com/blueloveTH/keras4torch/issues) 
 + send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
 
-Keras4Torch is still under development.
+Keras4Torch is still under development. You can contribute new features by opening a Pull Request.
 
 Any contribution to us would be more than welcome : )
-
-You can contribute new features by opening a Pull Request. (The details will be updated soon)

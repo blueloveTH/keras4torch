@@ -26,7 +26,7 @@ There are two ways to instantiate a `keras4torch.Model`.
 
 
 
-## 2 - Use Functional API (Beta)
+## 2 - Use functional API (Beta)
 
 Functional API allows you to build layers by functional programming.
 
@@ -49,7 +49,7 @@ inputs = fn.input([64])
 #### Step3: Connect layers and inputs
 
 ```python
-seq = fn(k4t.layers.Linear(64), inputs)
+seq = fn(k4t.layers.Linear(64), inputs, activation='relu')
 seq = fn(k4t.layers.Add(), [seq, inputs])
 output = fn(nn.Softmax(-1), seq)
 ```
