@@ -194,10 +194,12 @@ class Concatenate(nn.Module):
         return torch.cat(x, dim=self.dim)
 
 class Reshape(nn.Module):
-    def __init__(self, *args, **kwargs):
+    """
+    No need to include `batch_size` dimension.
+    """
+    def __init__(self, shape):
         super(Reshape, self).__init__()
-        self.args = args
-        self.kwargs = kwargs
+        self.shape = list(shape)
 
     def forward(self, x):
-        return x.reshape(*self.args, **self.kwargs)
+        return x.reshape(x.shape[0] + self.shape)
