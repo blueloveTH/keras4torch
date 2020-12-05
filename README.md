@@ -74,7 +74,7 @@ model = keras4torch.Model(model)
 
 **News (v0.4.1):** 您也可以使用keras4torch.layers提供的`KerasLayer`，以自动推算输入维度。
 
-包含`KerasLayer`的模型需要调用`model.build()`，其参数是样本的维度。具体示例如下：
+包含`KerasLayer`的模型需要调用`.build(input_shape)`，传入输入尺寸。具体示例如下：
 
 ```python
 import keras4torch.layers as layers
@@ -91,7 +91,7 @@ model = keras4torch.Model(model).build(input_shape=[28, 28])
 
 #### Step3: 设置优化器、损失函数和度量
 
-`model.compile()`函数对模型进行必要的配置。
+`.compile(optimizer, loss, metrics, device)`函数对模型进行必要的配置。
 
 参数既可以使用字符串，也可以使用`torch.nn`模块中提供的类实例。
 
@@ -99,9 +99,11 @@ model = keras4torch.Model(model).build(input_shape=[28, 28])
 model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
 ```
 
+如果GPU可用，keras4torch将会自动使用GPU进行训练。
+
 #### Step4: 训练模型
 
-`model.fit()`是训练模型的方法，将以batch_size=512运行30轮次。
+`.fit()`是训练模型的方法，将以batch_size=512运行30轮次。
 
 `validation_split=0.2`指定80%数据用于训练集，剩余20%用作验证集。
 
@@ -124,7 +126,7 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 
 #### Step5: 打印学习曲线
 
-`model.fit()`方法在结束时，返回关于训练历史数据的`pandas.DataFrame`实例。
+`.fit()`方法在结束时，返回关于训练历史数据的`pandas.DataFrame`实例。
 
 ```
 history.plot(kind='line', y=['acc', 'val_acc'])
