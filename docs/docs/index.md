@@ -2,11 +2,15 @@
 
 **"An Easy-to-Use Wrapper for Training PyTorch Models❤"**
 
-Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. With this framework, the training process can be considerably simplified.
+Keras4Torch is a Keras-style framework using PyTorch as its backend. It is designed for Kagglers and researchers with a focus on quick experimenting. There are two sub-packages.
 
-+ If you are a keras user, most of your training code can work well in Keras4Torch with little change.
++ (main) `keras4torch` or `k4t`
 
-+ If you are a pytorch user, Keras4Torch can help you train pytorch models with far less code than basic pytorch.
+  Provides an easy way to train PyTorch models compatible with Keras.
+
++ (extension) `keras4torch_contest` or `k4tc`
+
+  Builds a ready-to-use module/algorithm database along with the community.
 
 ## Installation
 
@@ -44,18 +48,7 @@ x_test, y_test = X[40000:], y[40000:]
 
 #### Step2: Define the Model
 
-```python
-model = torch.nn.Sequential(
-    nn.Flatten(),
-    nn.Linear(28*28, 512), nn.ReLU(),
-    nn.Linear(512, 128), nn.ReLU(),
-    nn.Linear(128, 10)
-)
-
-model = k4t.Model(model)    # attention this line
-```
-
-Alternatively, You can use `KerasLayer` for automatic shape inference, which can free you from calculating the input channels. Here is an equivalent to the model above.
+Use `KerasLayer` for automatic shape inference, which can free you from calculating the input channels.
 
 ```python
 model = torch.nn.Sequential(
@@ -66,13 +59,11 @@ model = torch.nn.Sequential(
 )
 ```
 
-A model containing `KerasLayer` needs an extra `.build(input_shape)` operation.
+Wrap the model by `k4t.Model` and build `KerasLayer`(s).
 
 ```python
 model = k4t.Model(model).build([28, 28])
 ```
-
-Keras4Torch also provides functional API like Keras. Click [here](https://keras4torch.readthedocs.io/en/latest/api_references/models_api/#2-use-functional-api-beta) for more details.
 
 #### Step3: Config Optimizer, Loss and Metric
 
@@ -119,13 +110,84 @@ model.evaluate(x_test, y_test)
 
 
 
-## Communication
+## Contribution
 
-If you have any problem when using Keras4Torch, please:
+#### For `keras4torch`
 
-+ open a [Github Issue](https://github.com/blueloveTH/keras4torch/issues) 
-+ send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
+If you have problems when using `keras4torch` or want to add new features to it, please start a topic in [Github Discussions](https://github.com/blueloveTH/keras4torch/discussions) or create a [Pull Request](https://github.com/blueloveTH/keras4torch/pulls).
 
-Keras4Torch is still under development. You can contribute new features by opening a Pull Request.
 
-Any contribution to us would be more than welcome : )
+
+#### For `keras4torch_contest`
+
+Anyone can upload module or algorithm to `k4tc` then share it with the community.
+
+For doing this, you need to prepare your code and create a pull request to `./keras4torch_contest`.
+
+There are several directories in `./keras4torch_contest`. Make sure you are choosing the correct directory.
+
++ applications/
+
+    Configurable solutions such as a whole model architecture.
+
++ layers/
+
+    Reusable modules that can be added to a wide range of networks.
+
++ losses/
+
+    loss function that are not built-in of `torch.nn`
+
++ metrics/
+
+    metrics that are not built-in of `keras4torch.metrics`
+
++ optimizers/
+
+    optimizers that are not built-in of `torch.optim`
+
++ ... ...
+
+The module or algorithm should contain a doc string, following the example format as below.
+
+```txt
+Squeeze-and-Excitation Module 1D
+
+See reference: `Hu, Jie, Li Shen, and Gang Sun. "Squeeze-and-excitation networks." Proceedings of the IEEE conference on computer vision and pattern recognition. 2018.`
+
+Args:
+
+* `reduction_ratio` (int, default=16)
+
+* `channel_last` (bool, default=False)
+
+Input: [N, C_in, L_in] by default and [N, L_in, C_in] if `channel_last=True`
+
+Output: The same with the input
+
+Contributor: blueloveTH
+```
+
+
+
+**Tips**
+
++ The doc string needs to describe the usage of the module clearly
+
++ Reference link is required (The entity is surrounded by backquotes)
+  
+    + Using a URL
+
+        ```
+        See reference: `https://github.com/blueloveTH/keras4torch`
+        ```
+
+    + Or using a MLA style citation (You can generate it by [Google Scholar](https://scholar.google.com/))
+
+        ```
+        See reference: `Hu, Jie, Li Shen, and Gang Sun. "Squeeze-and-excitation networks." Proceedings of the IEEE conference on computer vision and pattern recognition. 2018.`
+        ```
+
++ (Optional) Write your name as contributor in the last line
+
++ For more questions, please start a topic in [Github Discussions](https://github.com/blueloveTH/keras4torch/discussions) or send email to blueloveTH@foxmail.com
