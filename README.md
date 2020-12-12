@@ -1,5 +1,7 @@
 # Keras4Torch
 
+[(Documentations)](https://keras4torch.readthedocs.io/en/latest/?badge=latest) [(Dev Logs)](https://github.com/blueloveTH/keras4torch/discussions/3)
+
 #### "An Easy-to-Use Wrapper for Training PyTorch Models❤"
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
