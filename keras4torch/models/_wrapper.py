@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 from collections import OrderedDict
 from torch.utils.data import random_split
+from .._summary import summary
 
 from .._training import Trainer
 from ..layers import KerasLayer
@@ -33,7 +34,7 @@ class Model(torch.nn.Module):
         self.model.apply(check_keras_layer)
 
     def forward(self, x):
-        return self.model.forward(x)
+        return self.model(x)
 
     def count_params(self) -> int:
         """Count the total number of scalars composing the weights."""
@@ -48,7 +49,7 @@ class Model(torch.nn.Module):
         if self.has_keras_layer:
             input_shape = [2] + list(input_shape)
             probe_input = torch.zeros(size=input_shape).to(dtype=dtype)
-            self.model.forward(probe_input)
+            self.model(probe_input)
         self.built = True
         return self
 
@@ -58,9 +59,8 @@ class Model(torch.nn.Module):
 
     def summary(self, input_shape, depth=3):
         """Print a string summary of the network."""
-        raise NotImplementedError('This method is not available now.')
-        #self._check_keras_layer()
-        #torchsummary.summary(self.model, input_shape, depth=depth, verbose=1)
+        self._check_keras_layer()
+        summary(self.model, input_shape, depth=depth, verbose=1)
 
     def compile(self, optimizer, loss, metrics=None, device=None):
         """
@@ -182,7 +182,7 @@ class Model(torch.nn.Module):
                 device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.eval().to(device=device)
 
-        outputs = [self.forward(x_batch[0].to(device=device)) for x_batch in data_loader]
+        outputs = [self(x_batch[0].to(device=device)) for x_batch in data_loader]
         outputs = torch.cat(outputs, dim=0)
 
         if activation != None:

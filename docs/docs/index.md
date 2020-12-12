@@ -4,11 +4,11 @@
 
 Keras4Torch is a Keras-style framework using PyTorch as its backend. It is designed for Kagglers and researchers with a focus on quick experimenting. There are two sub-packages.
 
-+ (main) `keras4torch` or `k4t`
++ (main) `keras4torch`
 
     Provides an easy way to train PyTorch models compatible with Keras.
 
-+ (extension) `keras4torch_contest` or `k4tc`
++ (extension) `torchlab`
 
     Builds a ready-to-use module/algorithm database along with the community.
 
@@ -118,13 +118,13 @@ If you have problems when using `keras4torch` or want to add new features to it,
 
 
 
-#### For `keras4torch_contest`
+#### For `torchlab`
 
-Anyone can upload module or algorithm to `k4tc` then share it with the community.
+Anyone can upload module or algorithm to `torchlab` then share it with the community.
 
-For doing this, you need to prepare your code and create a pull request to `./keras4torch_contest`.
+For doing this, you need to prepare your code and create a pull request to `./torchlab`.
 
-There are several directories in `./keras4torch_contest`. Make sure you are choosing the correct directory.
+There are several directories in `./torchlab`. Make sure you are choosing the correct directory.
 
 + applications/
 
@@ -148,7 +148,7 @@ There are several directories in `./keras4torch_contest`. Make sure you are choo
 
 + ... ...
 
-The module or algorithm should contain a doc string, following the example format as below.
+The module or algorithm should contain a doc string, following the example format below.
 
 ```txt
 Squeeze-and-Excitation Module 1D

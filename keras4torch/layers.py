@@ -87,7 +87,9 @@ class KerasLayer(nn.Module):
     def forward(self, x):
         if not self.module:
             self.module = self.build(x.shape)
-        return self.module.forward(x)
+            self.module._k4t_layer_tag = 0
+        return self.module(x)
+        
 
 # Conv
 class Conv1d(KerasLayer):
@@ -173,4 +175,4 @@ class Reshape(nn.Module):
         self.shape = list(shape)
 
     def forward(self, x):
-        return x.reshape(x.shape[0] + self.shape)
+        return x.reshape([x.shape[0]] + self.shape)
