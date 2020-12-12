@@ -6,11 +6,11 @@ Keras4Torch is a Keras-style framework using PyTorch as its backend. It is desig
 
 + (main) `keras4torch` or `k4t`
 
-  Provides an easy way to train PyTorch models compatible with Keras.
+    Provides an easy way to train PyTorch models compatible with Keras.
 
 + (extension) `keras4torch_contest` or `k4tc`
 
-  Builds a ready-to-use module/algorithm database along with the community.
+    Builds a ready-to-use module/algorithm database along with the community.
 
 ## Installation
 
@@ -92,7 +92,7 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 
 #### Step5: Plot Learning Curve
 
-```
+```python
 history.plot(kind='line', y=['acc', 'val_acc'])
 ```
 
@@ -174,15 +174,15 @@ Contributor: blueloveTH
 
 + The doc string needs to describe the usage of the module clearly
 
-+ Reference link is required (The entity is surrounded by backquotes)
++ Reference link is required
   
     + Using a URL
 
         ```
-        See reference: `https://github.com/blueloveTH/keras4torch`
+        See reference: https://github.com/blueloveTH/keras4torch
         ```
 
-    + Or using a MLA style citation (You can generate it by [Google Scholar](https://scholar.google.com/))
+    + Or using a MLA style citation (Generate it via [Google Scholar](https://scholar.google.com/) then add backquotes to it)
 
         ```
         See reference: `Hu, Jie, Li Shen, and Gang Sun. "Squeeze-and-excitation networks." Proceedings of the IEEE conference on computer vision and pattern recognition. 2018.`
