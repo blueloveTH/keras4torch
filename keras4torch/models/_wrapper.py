@@ -1,6 +1,5 @@
 import torch
 from torch.utils.data import DataLoader, TensorDataset
-import torchsummary
 from collections import OrderedDict
 from torch.utils.data import random_split
 
@@ -59,8 +58,9 @@ class Model(torch.nn.Module):
 
     def summary(self, input_shape, depth=3):
         """Print a string summary of the network."""
-        self._check_keras_layer()
-        torchsummary.summary(self.model, input_shape, depth=depth, verbose=1)
+        raise NotImplementedError('This method is not available now.')
+        #self._check_keras_layer()
+        #torchsummary.summary(self.model, input_shape, depth=depth, verbose=1)
 
     def compile(self, optimizer, loss, metrics=None, device=None):
         """

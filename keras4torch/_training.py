@@ -63,6 +63,19 @@ class Trainer(object):
         self.__fire_event(Events.ON_TRAIN_END)
         return self.logger.history
 
+    @torch.no_grad()
+    def __calc_metrics(self, y_pred, y_true, sample_weight=None):
+        metrics = {}
+        for key, score_fn in self.metrics.items():
+            if sample_weight and 'loss' in key:
+                loss = score_fn(y_pred, y_true)
+                if loss.dim() == 0:
+                    raise ValueError("You should set the loss function with `reduction='none'` when using sample_weight.")
+                metrics[key] = (loss * sample_weight).mean().cpu().item()
+            else:
+                metrics[key] = score_fn(y_pred, y_true).mean().cpu().item()
+        return metrics
+
     def train_precise_mode(self, data_loader):
         self.model.train()
 
@@ -89,7 +102,7 @@ class Trainer(object):
 
     def train_fast_mode(self, data_loader):
         self.model.train()
-        metrics, y_true, y_pred = {}, [], []
+        y_true, y_pred = [], []
         sample_weight = []
 
         has_w = len(data_loader.dataset[0]) == 3
@@ -121,17 +134,7 @@ class Trainer(object):
         if has_w:
             sample_weight = torch.cat(sample_weight)
 
-        with torch.no_grad():
-            for key, score_fn in self.metrics.items():
-                if has_w and 'loss' in key:
-                    loss = score_fn(y_pred, y_true)
-                    if loss.dim() == 0:
-                        raise ValueError("You should set the loss function with `reduction='none'` when using sample_weight.")
-                    metrics[key] = (loss * sample_weight).mean().cpu().item()
-                else:
-                    metrics[key] = score_fn(y_pred, y_true).mean().cpu().item()
-
-        return metrics
+        return self.__calc_metrics(y_pred, y_true, sample_weight)
 
     @torch.no_grad()
     def evaluate(self, data_loader):
@@ -139,7 +142,7 @@ class Trainer(object):
     
         has_w = len(data_loader.dataset[0]) == 3
 
-        metrics, y_true, y_pred = {}, [], []
+        y_true, y_pred = [], []
         sample_weight = []
 
         for t in data_loader:
@@ -157,17 +160,8 @@ class Trainer(object):
 
         if has_w:
             sample_weight = torch.cat(sample_weight)
-
-        for key, score_fn in self.metrics.items():
-            if has_w and 'loss' in key:
-                loss = score_fn(y_pred, y_true)
-                if loss.dim() == 0:
-                    raise ValueError("You should set the loss function with `reduction='none'` when using sample_weight.")
-                metrics[key] = (loss * sample_weight).mean().cpu().item()
-            else:
-                metrics[key] = score_fn(y_pred, y_true).mean().cpu().item()
         
-        return metrics
+        return self.__calc_metrics(y_pred, y_true, sample_weight)
 
 
 

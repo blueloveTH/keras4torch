@@ -1,23 +1,23 @@
 import torch
 import torch.nn as nn
-from .. import layers
+import keras4torch as k4t
 
 class res_block(nn.Module):
     def __init__(self, filters, kernel_size):
         super(res_block, self).__init__()
 
         self.conv1d = nn.Sequential(
-            layers.Conv1d(filters, 1),
-            nn.ReLU(inplace=True), layers.BatchNorm1d(),
+            k4t.layers.Conv1d(filters, 1),
+            nn.ReLU(inplace=True), k4t.layers.BatchNorm1d(),
 
-            layers.Conv1d(filters, kernel_size, padding=kernel_size//2),
-            nn.ReLU(inplace=True), layers.BatchNorm1d(),
+            k4t.layers.Conv1d(filters, kernel_size, padding=kernel_size//2),
+            nn.ReLU(inplace=True), k4t.layers.BatchNorm1d(),
 
-            layers.Conv1d(filters, 1),
-            nn.ReLU(inplace=True), layers.BatchNorm1d(),
+            k4t.layers.Conv1d(filters, 1),
+            nn.ReLU(inplace=True), k4t.layers.BatchNorm1d(),
         )
 
-        self.shortcut = layers.Conv1d(filters, 1)
+        self.shortcut = k4t.layers.Conv1d(filters, 1)
     
     def forward(self, x):
         return self.conv1d(x) + self.shortcut(x)
@@ -41,14 +41,11 @@ class inception_block(nn.Module):
         return x
 
 
-from ..models._wrapper import Model
-from ..losses import CELoss
-
 def conv1d_xwbank2020(input_shape, num_classes, compile=False):
     """
     Conv1D model for time series classification
     """
-    model = Model(_Conv1D_xwbank2020(num_classes=num_classes))
+    model = k4t.Model(_Conv1D_xwbank2020(num_classes=num_classes))
     model.build(input_shape)
 
     def weights_init(m):
@@ -59,7 +56,7 @@ def conv1d_xwbank2020(input_shape, num_classes, compile=False):
     model.apply(weights_init)
 
     if compile:
-        model.compile(optimizer='adam', loss=CELoss(label_smoothing=0.1), metrics=['acc'])
+        model.compile(optimizer='adam', loss=k4t.losses.CELoss(label_smoothing=0.1), metrics=['acc'])
 
     return model
 
@@ -72,9 +69,9 @@ class _Conv1D_xwbank2020(nn.Module):
         self.seq_7 = inception_block(kernel_size=7)
         
         self.dense = nn.Sequential(
-            layers.Linear(512), nn.ReLU(inplace=True), nn.Dropout(0.3),
-            layers.Linear(128), nn.ReLU(inplace=True), nn.Dropout(0.3),
-            layers.Linear(num_classes)
+            k4t.layers.Linear(512), nn.ReLU(inplace=True), nn.Dropout(0.3),
+            k4t.layers.Linear(128), nn.ReLU(inplace=True), nn.Dropout(0.3),
+            k4t.layers.Linear(num_classes)
         )
 
     def forward(self, x):

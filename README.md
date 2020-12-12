@@ -1,12 +1,6 @@
 # Keras4Torch
 
-[(README in English)](https://github.com/blueloveTH/keras4torch/blob/main/README_en.md)  [(Documentations)](https://keras4torch.readthedocs.io/en/latest/?badge=latest)
-
-####  “开箱即用”的PyTorch模型训练高级API
-
-+ 对keras爱好者来说，Keras4Torch保留了绝大多数的Keras特性。你能够使用和keras相同的代码运行pytorch模型。
-
-+ 对pytorch爱好者来说，Keras4Torch使你只需要几行代码就可以完成pytorch模型的训练、评估和推理。
+#### "An Easy-to-Use Wrapper for Training PyTorch Models❤"
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
 [![PyTorch Versions](https://img.shields.io/badge/PyTorch-1.6+-blue.svg)](https://pypi.org/project/keras4torch)
@@ -15,51 +9,47 @@
 [![Documentation Status](https://readthedocs.org/projects/keras4torch/badge/?version=latest)](https://keras4torch.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/github/license/blueloveTH/keras4torch.svg)](https://github.com/blueloveTH/keras4torch/blob/master/LICENSE)
 
+Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. With this framework, the training process can be considerably simplified.
 
++ If you are a keras user, most of your training code can work well in Keras4Torch with little change.
 
-## 安装与配置
++ If you are a pytorch user, Keras4Torch can help you train pytorch models with far less code than basic pytorch.
+
+## Installation
 
 ```
 pip install keras4torch
 ```
 
-支持PyTorch 1.6及以上。使用早期版本的torch可能导致部分功能不可用。
+Keras4Torch supports PyTorch 1.6 or newer.
 
 
 
-## 快速开始
+## Quick Start
 
-作为示例，让我们开始编写一个MNIST手写数字识别程序！
+Let's start with a simple example of MNIST!
 
 ```python
 import torch
 import torchvision
 from torch import nn
 
-import keras4torch
+import keras4torch as k4t
 ```
 
-#### Step1: 数据预处理
-
-首先，从`torchvision.datasets`中加载MNIST数据集，并将每个像素点缩放到[0, 1]之间。
-
-其中前40000张图片作为训练集，后20000张图片作为测试集。
+#### Step1: Preprocess Data
 
 ```python
 mnist = torchvision.datasets.MNIST(root='./', download=True)
 X, y = mnist.train_data, mnist.train_labels
 
-X = X.float() / 255.0
+X = X.float() / 255.0    # scale the pixels to [0, 1]
 
 x_train, y_train = X[:40000], y[:40000]
 x_test, y_test = X[40000:], y[40000:]
 ```
 
-#### Step2: 构建模型
-
-我们使用`torch.nn.Sequential`定义一个由三层全连接组成的线性模型，激活函数为ReLU。
-
-接着，使用`keras4torch.Model`封装Sequential模型，以集成训练API。
+#### Step2: Define the Model
 
 ```python
 model = torch.nn.Sequential(
@@ -69,43 +59,29 @@ model = torch.nn.Sequential(
     nn.Linear(128, 10)
 )
 
-model = keras4torch.Model(model)
+model = k4t.Model(model)    # attention this line
 ```
 
-**News (v0.4.1):** 您也可以使用keras4torch.layers提供的`KerasLayer`，以自动推算输入维度。
-
-包含`KerasLayer`的模型需要调用`.build(input_shape)`，传入输入尺寸。具体示例如下：
+Alternatively, You can use `KerasLayer` for automatic shape inference, which can free you from calculating the input channels. Here is an equivalent to the model above.
 
 ```python
-import keras4torch.layers as layers
-
 model = torch.nn.Sequential(
     nn.Flatten(),
-    layers.Linear(512), nn.ReLU(),
-    layers.Linear(128), nn.ReLU(),
-    layers.Linear(10)
+    k4t.layers.Linear(512), nn.ReLU(),
+    k4t.layers.Linear(128), nn.ReLU(),
+    k4t.layers.Linear(10)
 )
-
-model = keras4torch.Model(model).build(input_shape=[28, 28])
 ```
 
-#### Step3: 设置优化器、损失函数和度量
-
-`.compile(optimizer, loss, metrics, device)`函数对模型进行必要的配置。
-
-参数既可以使用字符串，也可以使用`torch.nn`模块中提供的类实例。
+A model containing `KerasLayer` needs an extra `.build(input_shape)` operation.
 
 ```python
-model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
+model = k4t.Model(model).build([28, 28])
 ```
 
-如果GPU可用，keras4torch将会自动使用GPU进行训练。
+Keras4Torch also provides functional API like Keras. Click [here](https://keras4torch.readthedocs.io/en/latest/api_references/models_api/#2-use-functional-api-beta) for more details.
 
-#### Step4: 训练模型
-
-`.fit()`是训练模型的方法，将以batch_size=512运行30轮次。
-
-`validation_split=0.2`指定80%数据用于训练集，剩余20%用作验证集。
+#### Step4: Training
 
 ```python
 history = model.fit(x_train, y_train,
@@ -124,9 +100,7 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 ... ...
 ```
 
-#### Step5: 打印学习曲线
-
-`.fit()`方法在结束时，返回关于训练历史数据的`pandas.DataFrame`实例。
+#### Step5: Plot Learning Curve
 
 ```
 history.plot(kind='line', y=['acc', 'val_acc'])
@@ -134,9 +108,7 @@ history.plot(kind='line', y=['acc', 'val_acc'])
 
 <img src="imgs/learning_curve.svg"  />
 
-#### Step6: 在测试集上评估
-
-评估测试集上的损失和准确率。
+#### Step6: Evaluate on Test Set
 
 ```python
 model.evaluate(x_test, y_test)
@@ -148,20 +120,16 @@ model.evaluate(x_test, y_test)
 
 
 
-## 社群交流
+## Communication
 
-如果您在使用中遇到问题，可通过如下方式获取支持：
+If you have any problem when using Keras4Torch, please:
 
-+ 提交 [Github Issue](https://github.com/blueloveTH/keras4torch/issues) 
-+ 发送邮件至 blueloveTH@foxmail.com 或 zhangzhipengcs@foxmail.com
++ open a [Github Issue](https://github.com/blueloveTH/keras4torch/issues) 
++ send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
 
+Keras4Torch is still under development.
 
+Any contribution to us would be more than welcome : )
 
-## 贡献
-
-如果您有任何的想法和建议，请随时和我们联系，您的想法对我们非常重要。
-
-同时也欢迎您加入我们，一同维护这个项目。
-
-
+You can contribute new features by opening a Pull Request. (The details will be updated soon)
 

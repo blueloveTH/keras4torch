@@ -120,25 +120,6 @@ class Linear(KerasLayer):
         return nn.Linear(in_shape[1], *self.args, **self.kwargs)
 
 
-class _SqueezeAndExcitation1d(nn.Module):
-    def __init__(self, in_shape, reduction_ratio=16, channel_last=False):
-        super(_SqueezeAndExcitation1d, self).__init__()
-
-        C_dim = 2 if channel_last else 1
-        L_dim = 1 if channel_last else 2
-        C_in = in_shape[C_dim]
-
-        self.fc = nn.Sequential(
-            Lambda(lambda x: x.mean(dim=L_dim)),
-            Linear(C_in // reduction_ratio), nn.ReLU(),
-            Linear(C_in), nn.Sigmoid(),
-            Lambda(lambda x: x.unsqueeze(L_dim))
-        )
-    
-    def forward(self, x):
-        return x * self.fc(x)
-
-
 class GRU(KerasLayer):
     def __init__(self, *args, return_sequences=True, batch_first=True, **kwargs):
         super(GRU, self).__init__(*args, **kwargs)
@@ -166,16 +147,6 @@ class LSTM(KerasLayer):
         )
 
 
-class SqueezeAndExcitation1d(KerasLayer):
-    """
-    Squeeze-and-Excitation Module
-
-    input: [N, C_in, L_in] by default and [N, L_in, C_in] if `channel_last=True`
-
-    output: The same with the input
-    """
-    def build(self, in_shape):
-        return _SqueezeAndExcitation1d(in_shape, *self.args, **self.kwargs)
 
 
 class Add(nn.Module):

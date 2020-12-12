@@ -14,7 +14,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/blueloveTH/keras4torch",
     packages=setuptools.find_packages(),
-    install_requires=['torch-summary==1.4.3', 'pandas'],
+    install_requires=['pandas'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

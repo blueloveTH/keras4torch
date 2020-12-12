@@ -1,4 +1,4 @@
 from .models import Model
-from . import layers, metrics, callbacks, applications, utils
+from . import layers, metrics, models, losses, activations, utils, callbacks, optimizers
 
-__version__ = '0.8.2'
+__version__ = '0.9.0'
