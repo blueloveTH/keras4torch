@@ -43,12 +43,20 @@ class inception_block(nn.Module):
 
 def conv1d_xwbank2020(input_shape, num_classes, compile=False):
     """
-    Conv1D model for time series classification
+    Conv1D model for time series classification.
+
+    Recommended configs:
+
+    Using `Adam` optimizer and a `MultistepLR` scheduler.
+
+    Return: `keras4torch.Model`
     """
     model = k4t.Model(_Conv1D_xwbank2020(num_classes=num_classes))
     model.build(input_shape)
 
+    # we should init the module weights after `.build()` when it contains `KerasLayer`
     def weights_init(m):
+        """Use recommended `xavier_uniform` to initialize."""
         if isinstance(m, torch.nn.Linear) or isinstance(m, torch.nn.Conv1d):
             nn.init.xavier_uniform_(m.weight.data)
             nn.init.zeros_(m.bias.data)
@@ -77,3 +85,5 @@ class _Conv1D_xwbank2020(nn.Module):
     def forward(self, x):
         x = torch.cat([self.seq_3(x), self.seq_5(x), self.seq_7(x)], axis=-1)
         return self.dense(x)
+
+__all__ = ['conv1d_xwbank2020']

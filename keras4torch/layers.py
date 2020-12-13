@@ -89,7 +89,16 @@ class KerasLayer(nn.Module):
             self.module = self.build(x.shape)
             self.module._k4t_layer_tag = 0
         return self.module(x)
-        
+
+    @property
+    def is_built(self):
+        return self.module is not None
+
+    def apply(self, fn):
+        if not self.module:
+            raise AssertionError("This module hasn't been built yet.")
+        return self.module.apply(fn)
+
 
 # Conv
 class Conv1d(KerasLayer):

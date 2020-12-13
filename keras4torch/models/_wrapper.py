@@ -26,12 +26,15 @@ class Model(torch.nn.Module):
         self.model = model
         self.compiled = False
         self.built = False
+        self.input_shape = None
 
-        self.has_keras_layer = False
-        def check_keras_layer(m):
-            if isinstance(m, KerasLayer):
-                self.has_keras_layer = True
-        self.model.apply(check_keras_layer)
+        def dfs(m):
+            for child in m.children():
+                if isinstance(child, KerasLayer):
+                    return True
+                return dfs(child)
+            return False
+        self.has_keras_layer = dfs(self)
 
     def forward(self, x):
         return self.model(x)
@@ -51,15 +54,21 @@ class Model(torch.nn.Module):
             probe_input = torch.zeros(size=input_shape).to(dtype=dtype)
             self.model(probe_input)
         self.built = True
+        self.input_shape = input_shape[1:]
         return self
 
     def _check_keras_layer(self):
         if self.has_keras_layer and not self.built:
-            raise AssertionError("You should call `model.build()` first because the model contains `KerasLayer`.")
+            raise AssertionError(
+                "Operation is unavailable until you call `.build()`. This is because the model contains `KerasLayer`."
+                )
 
-    def summary(self, input_shape, depth=3):
+    def summary(self, input_shape=None, depth=3):
         """Print a string summary of the network."""
         self._check_keras_layer()
+        if input_shape is None:
+            input_shape = self.input_shape
+        assert (input_shape is not None)
         summary(self.model, input_shape, depth=depth, verbose=1)
 
     def compile(self, optimizer, loss, metrics=None, device=None):
