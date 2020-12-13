@@ -1,7 +1,5 @@
 # Keras4Torch
 
-[(Documentations)](https://keras4torch.readthedocs.io/en/latest/?badge=latest) [(Dev Logs)](https://github.com/blueloveTH/keras4torch/discussions/3)
-
 #### "An Easy-to-Use Wrapper for Training PyTorch Models❤"
 
 [![Python](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue)](https://www.python.org)
@@ -11,15 +9,11 @@
 [![Documentation Status](https://readthedocs.org/projects/keras4torch/badge/?version=latest)](https://keras4torch.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/github/license/blueloveTH/keras4torch.svg)](https://github.com/blueloveTH/keras4torch/blob/master/LICENSE)
 
-Keras4Torch is a Keras-style framework using PyTorch as its backend. It is designed for Kagglers and researchers with a focus on quick experimenting. There are two sub-packages.
+Keras4Torch provides an easy way to train PyTorch models in Keras style. You can use `keras4torch.Model` to warp any `torch.nn.Module` to integrate core training features. With this framework, the training process can be considerably simplified.
 
-+ (main) `keras4torch`
++ If you are a keras user, most of your training code can work well in Keras4Torch with little change.
 
-    Provides an easy way to train PyTorch models compatible with Keras.
-
-+ (extension) `torchlab`
-
-    Builds a ready-to-use module/algorithm database along with the community.
++ If you are a pytorch user, Keras4Torch can help you train pytorch models with far less code than basic pytorch.
 
 ## Installation
 
@@ -57,7 +51,18 @@ x_test, y_test = X[40000:], y[40000:]
 
 #### Step2: Define the Model
 
-Use `KerasLayer` for automatic shape inference, which can free you from calculating the input channels.
+```python
+model = torch.nn.Sequential(
+    nn.Flatten(),
+    nn.Linear(28*28, 512), nn.ReLU(),
+    nn.Linear(512, 128), nn.ReLU(),
+    nn.Linear(128, 10)
+)
+
+model = k4t.Model(model)    # attention this line
+```
+
+Alternatively, You can use `KerasLayer` for automatic shape inference, which can free you from calculating the input channels. Here is an equivalent to the model above.
 
 ```python
 model = torch.nn.Sequential(
@@ -68,17 +73,13 @@ model = torch.nn.Sequential(
 )
 ```
 
-Wrap the model by `k4t.Model` and build `KerasLayer`(s).
+A model containing `KerasLayer` needs an extra `.build(input_shape)` operation.
 
 ```python
 model = k4t.Model(model).build([28, 28])
 ```
 
-#### Step3: Config Optimizer, Loss and Metric
-
-```python
-model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
-```
+Keras4Torch also provides functional API like Keras. Click [here](https://keras4torch.readthedocs.io/en/latest/api_references/models_api/#2-use-functional-api-beta) for more details.
 
 #### Step4: Training
 
@@ -101,7 +102,7 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 
 #### Step5: Plot Learning Curve
 
-```python
+```
 history.plot(kind='line', y=['acc', 'val_acc'])
 ```
 
@@ -119,84 +120,16 @@ model.evaluate(x_test, y_test)
 
 
 
-## Contribution
+## Communication
 
-#### For `keras4torch`
+If you have any problem when using Keras4Torch, please:
 
-If you have problems when using `keras4torch` or want to add new features to it, please start a topic in [Github Discussions](https://github.com/blueloveTH/keras4torch/discussions) or create a [Pull Request](https://github.com/blueloveTH/keras4torch/pulls).
++ open a [Github Issue](https://github.com/blueloveTH/keras4torch/issues) 
++ send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
 
+Keras4Torch is still under development.
 
+Any contribution to us would be more than welcome : )
 
-#### For `torchlab`
+You can contribute new features by opening a Pull Request. (The details will be updated soon)
 
-Anyone can upload module or algorithm to `torchlab` then share it with the community.
-
-For doing this, you need to prepare your code and create a pull request to `./torchlab`.
-
-There are several directories in `./torchlab`. Make sure you are choosing the correct directory.
-
-+ applications/
-
-    Configurable solutions such as a whole model architecture.
-
-+ layers/
-
-    Reusable modules that can be added to a wide range of networks.
-
-+ losses/
-
-    loss function that are not built-in of `torch.nn`
-
-+ metrics/
-
-    metrics that are not built-in of `keras4torch.metrics`
-
-+ optimizers/
-
-    optimizers that are not built-in of `torch.optim`
-
-+ ... ...
-
-The module or algorithm should contain a doc string, following the example format below.
-
-```txt
-Squeeze-and-Excitation Module 1D
-
-See reference: `Hu, Jie, Li Shen, and Gang Sun. "Squeeze-and-excitation networks." Proceedings of the IEEE conference on computer vision and pattern recognition. 2018.`
-
-Args:
-
-* `reduction_ratio` (int, default=16)
-
-* `channel_last` (bool, default=False)
-
-Input: [N, C_in, L_in] by default and [N, L_in, C_in] if `channel_last=True`
-
-Output: The same with the input
-
-Contributor: blueloveTH
-```
-
-
-
-**Tips**
-
-+ The doc string needs to describe the usage of the module clearly
-
-+ Reference link is required
-  
-    + Using a URL
-
-        ```
-        See reference: https://github.com/blueloveTH/keras4torch
-        ```
-
-    + Or using a MLA style citation (Generate it via [Google Scholar](https://scholar.google.com/) then add backquotes to it)
-
-        ```
-        See reference: `Hu, Jie, Li Shen, and Gang Sun. "Squeeze-and-excitation networks." Proceedings of the IEEE conference on computer vision and pattern recognition. 2018.`
-        ```
-
-+ (Optional) Write your name as contributor in the last line
-
-+ For more questions, please start a topic in [Github Discussions](https://github.com/blueloveTH/keras4torch/discussions) or send email to blueloveTH@foxmail.com
