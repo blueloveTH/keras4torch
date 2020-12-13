@@ -30,7 +30,7 @@ from torch import nn
 import keras4torch as k4t
 ```
 
-#### Step1: Preprocess Data
+#### Step1: Preprocess data
 
 ```python
 mnist = torchvision.datasets.MNIST(root='./', download=True)
@@ -42,7 +42,7 @@ x_train, y_train = X[:40000], y[:40000]
 x_test, y_test = X[40000:], y[40000:]
 ```
 
-#### Step2: Define the Model
+#### Step2: Define the model
 
 ```python
 model = torch.nn.Sequential(
@@ -72,15 +72,42 @@ A model containing `KerasLayer` needs an extra `.build(input_shape)` operation.
 model = k4t.Model(model).build([28, 28])
 ```
 
-Keras4Torch also provides functional API like Keras. Click [here](https://keras4torch.readthedocs.io/en/latest/api_references/models_api/#2-use-functional-api-beta) for more details.
+#### Step3: Summary the model
 
-#### Step3: Config Optimizer, Loss and Metric
+```python
+model.summary()
+```
+
+```txt
+==============================================================================
+Layer (type:depth-idx)                   Output Shape              Param #
+==============================================================================
+├─Flatten: 1-1                           [-1, 784]                 --
+├─Linear*: 1-2                           [-1, 512]                 401,920
+├─ReLU: 1-3                              [-1, 512]                 --
+├─Linear*: 1-4                           [-1, 128]                 65,664
+├─ReLU: 1-5                              [-1, 128]                 --
+├─Linear*: 1-6                           [-1, 10]                  1,290
+==============================================================================
+Total params: 468,874
+Trainable params: 468,874
+Non-trainable params: 0
+Total mult-adds (M): 0.47
+==============================================================================
+Input size (MB): 0.00
+Forward/backward pass size (MB): 0.00
+Params size (MB): 1.79
+Estimated Total Size (MB): 1.80
+==============================================================================
+```
+
+#### Step4: Config optimizer, loss and metrics
 
 ```python
 model.compile(optimizer='adam', loss=nn.CrossEntropyLoss(), metrics=['acc'])
 ```
 
-#### Step4: Training
+#### Step5: Training
 
 ```python
 history = model.fit(x_train, y_train,
@@ -99,15 +126,15 @@ Epoch 4/30 - 0.5s - loss: 0.1513 - acc: 0.9555 - val_loss: 0.1663 - val_acc: 0.9
 ... ...
 ```
 
-#### Step5: Plot Learning Curve
+#### Step6: Plot learning curve
 
 ```
 history.plot(kind='line', y=['acc', 'val_acc'])
 ```
 
-![learning_curve.svg](imgs/learning_curve.svg)
+<img src="imgs/learning_curve.svg"  />
 
-#### Step6: Evaluate on Test Set
+#### Step7: Evaluate on test set
 
 ```python
 model.evaluate(x_test, y_test)
@@ -126,6 +153,9 @@ If you have any problem when using Keras4Torch, please:
 + open a [Github Issue](https://github.com/blueloveTH/keras4torch/issues) 
 + send email to blueloveTH@foxmail.com or zhangzhipengcs@foxmail.com.
 
-Keras4Torch is still under development. You can contribute new features by opening a Pull Request.
+Keras4Torch is still under development.
+
+You can contribute new features by opening a Pull Request. (The details will be updated soon)
 
 Any contribution to us would be more than welcome : )
+

@@ -30,9 +30,8 @@ class Model(torch.nn.Module):
 
         def dfs(m):
             for child in m.children():
-                if isinstance(child, KerasLayer):
+                if isinstance(child, KerasLayer) or dfs(child):
                     return True
-                return dfs(child)
             return False
         self.has_keras_layer = dfs(self)
 
@@ -50,11 +49,11 @@ class Model(torch.nn.Module):
     def build(self, input_shape, dtype=torch.float32):
         """Build the model when it contains `KerasLayer`."""
         if self.has_keras_layer:
-            input_shape = [2] + list(input_shape)
-            probe_input = torch.zeros(size=input_shape).to(dtype=dtype)
+            batch_shape = [2] + list(input_shape)
+            probe_input = torch.zeros(size=batch_shape).to(dtype=dtype)
             self.model(probe_input)
         self.built = True
-        self.input_shape = input_shape[1:]
+        self.input_shape = list(input_shape)
         return self
 
     def _check_keras_layer(self):
