@@ -33,7 +33,7 @@ class Model(torch.nn.Module):
                 if isinstance(child, KerasLayer) or dfs(child):
                     return True
             return False
-        self.has_keras_layer = dfs(self)
+        self._has_keras_layer = dfs(self)
 
     def forward(self, x):
         return self.model(x)
@@ -42,13 +42,17 @@ class Model(torch.nn.Module):
         """Count the total number of scalars composing the weights."""
         return sum([p.numel() for p in self.parameters()])
 
+    @property
+    def trainable_params(self):
+        """Return all trainable parameters of the model."""
+        return filter(lambda p: p.requires_grad, self.parameters())
 
     ########## keras-style methods below ##########
 
     @torch.no_grad()
     def build(self, input_shape, dtype=torch.float32):
         """Build the model when it contains `KerasLayer`."""
-        if self.has_keras_layer:
+        if self._has_keras_layer:
             batch_shape = [2] + list(input_shape)
             probe_input = torch.zeros(size=batch_shape).to(dtype=dtype)
             self.model(probe_input)
@@ -57,7 +61,7 @@ class Model(torch.nn.Module):
         return self
 
     def _check_keras_layer(self):
-        if self.has_keras_layer and not self.built:
+        if self._has_keras_layer and not self.built:
             raise AssertionError(
                 "Operation is unavailable until you call `.build()`. This is because the model contains `KerasLayer`."
                 )

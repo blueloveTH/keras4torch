@@ -1,5 +1,3 @@
-from os import lseek
-from keras4torch.layers import LSTM
 import torch
 from ._wrapper import Model
 from ..activations import _create_activation
@@ -8,8 +6,6 @@ class SymbolicTensor(object):
     def __init__(self, module, *inputs, **kwargs):
         self._module = module
         self._inputs = inputs
-        self._activation = _create_activation(kwargs['activation']) \
-                                    if 'activation' in kwargs else lambda x: x
         
     @property
     def shape(self):
@@ -23,7 +19,7 @@ class SymbolicTensor(object):
 
     def eval(self):
         args = [self._deep_eval(i) for i in self._inputs]
-        return self._activation(self._module(*args))
+        return self._module(*args)
 
 class SymbolicTensorInput(object):
     def __init__(self, input_shape, dtype=torch.float32):
@@ -45,7 +41,7 @@ class SymbolicTensorInput(object):
     def dtype(self):
         return self._dtype
 
-class _FunctionalModule(torch.nn.Module):
+class _FunctionalModule(torch.nn.ModuleList):
     def __init__(self):
         super(_FunctionalModule, self).__init__()
         self.inputs = None
@@ -53,7 +49,7 @@ class _FunctionalModule(torch.nn.Module):
     
     def set_modules(self, modules):
         assert self.inputs and self.outputs
-        self.module_list = torch.nn.ModuleList(modules)
+        self.extend(modules)
 
     @property
     def input_shape(self):
@@ -78,9 +74,14 @@ class Functional(object):
         self._fn_module.inputs = SymbolicTensorInput(input_shape, dtype)
         return self._fn_module.inputs
         
-    def __call__(self, module, *inputs, **kwargs):
+    def __call__(self, module, *inputs, activation=None, **kwargs):
         self._module_list.append(module)
-        return SymbolicTensor(module, *inputs, **kwargs)
+        st = SymbolicTensor(module, *inputs, **kwargs)
+
+        if activation is not None:
+            activation = _create_activation(activation)
+            st = self(activation, st)
+        return st
 
     def build_model(self, outputs):
         assert self._fn_module.outputs is None
