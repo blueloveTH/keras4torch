@@ -16,7 +16,7 @@
 pip install keras4torch
 ```
 
-PyTorch 1.6 or newer is required.
+PyTorch 1.6+ and Python 3.6+ is required.
 
 
 

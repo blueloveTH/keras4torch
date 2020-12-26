@@ -4,15 +4,13 @@
 <p align="center">
     <strong>A Ready-to-Use Wrapper for Training PyTorch Models✨</strong>
 </p>
-
 <p align="center">
-    <a href="https://www.python.org"><img src="https://img.shields.io/badge/python-3.6+-blue" alt="Python"></a>
-    <a href="https://pepy.tech/project/keras4torch"><img src="https://pepy.tech/badge/keras4torch" alt="Downloads"></a>
     <a href="https://pypi.python.org/pypi/keras4torch"><img src="https://img.shields.io/pypi/v/keras4torch.svg" alt="PyPI"></a>
+    <a href="https://pepy.tech/project/keras4torch"><img src="https://pepy.tech/badge/keras4torch" alt="Downloads"></a>
     <a href="https://keras4torch.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/keras4torch/badge/?version=latest" alt="Documentation Status"></a>
     <a href="https://github.com/blueloveTH/keras4torch/blob/master/LICENSE"><img src="https://img.shields.io/github/license/blueloveTH/keras4torch.svg" alt="License"></a>
     <!-- <a href="https://www.buymeacoffee.com/blueloveTH"><img src="https://img.shields.io/badge/Buy%20me%20a-coffee-cyan.svg?logo=buy-me-a-coffee&logoColor=cyan"></a> -->
-    <!-- <a href="https://codecov.io/gh/blueloveTH/keras4torch"><img src="https://codecov.io/gh/blueloveTH/keras4torch/branch/main/graph/badge.svg" alt="CodeCov"/></a> -->
+    <a href="https://codecov.io/gh/blueloveTH/keras4torch"><img src="https://codecov.io/gh/blueloveTH/keras4torch/branch/main/graph/badge.svg" alt="CodeCov"/></a>
 </p>
 <p align="center">
     <a href="https://keras4torch.readthedocs.io/en/latest">Documentations</a>
@@ -21,6 +19,7 @@
     •
     <a href="https://github.com/blueloveTH/keras4torch/tree/main/minimum">Mini Version</a>
 </p>
+
 
 
 `keras4torch` provides a high-level API to train PyTorch models compatible with Keras. This project is designed for beginner with these objectives: 
@@ -37,7 +36,7 @@
 pip install keras4torch
 ```
 
-PyTorch 1.6 or newer is required.
+PyTorch 1.6+ and Python 3.6+ is required.
 
 
 
