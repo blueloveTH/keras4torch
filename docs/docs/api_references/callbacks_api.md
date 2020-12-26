@@ -12,7 +12,7 @@ You can use callbacks to:
 
 
 
-## Usage of callbacks via the built-in `fit()` loop
+## Usage of callbacks
 
 You can pass a list of callbacks (as the keyword argument `callbacks`) to the `.fit()` method of a model:
 

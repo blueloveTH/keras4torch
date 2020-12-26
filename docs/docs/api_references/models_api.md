@@ -6,13 +6,21 @@ There are two ways to instantiate a `keras4torch.Model`.
 
 `keras4torch.Model` wraps a `torch.nn.Module` to integrate training and inference features.
 
-#### Training Pipeline
+#### Configs
 
-+ compile
++   compile
+
+#### NumPy workflow
+
 + fit
 + evaluate
 + predict
-+ (for DataLoader) fit_dl, evaluate_dl, predict_dl
+
+#### DataLoader workflow
+
++ fit_dl
++ evaluate_dl
++ predict_dl
 
 #### Saving & Serialization
 

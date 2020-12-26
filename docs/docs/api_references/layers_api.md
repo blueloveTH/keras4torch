@@ -35,25 +35,7 @@ The argument `input_shape` should not include batch_size dimension.
 
 In fact, what a `KerasLayer` do is to delay the module instantiation to the first `.forward()` call, thus it can get the output shape from its previous layer and decide how many channels should be created.
 
-To write your own `KerasLayer` for automatic shape inference, you need to subclass `KerasLayer` and implement its abstract method `build()`, as the source code shown below.
-
-```python
-class KerasLayer(nn.Module):
-    def __init__(self, *args, **kwargs) -> None:
-        super(KerasLayer, self).__init__()
-        self.args = args
-        self.kwargs = kwargs
-        self.module = None
-
-    @abstractclassmethod
-    def build(self, in_shape: torch.Size):
-        pass
-
-    def forward(self, x):
-        if not self.module:
-            self.module = self.build(x.shape)
-        return self.module.forward(x)
-```
+To write your own `KerasLayer` for automatic shape inference, you need to subclass `KerasLayer` and implement its abstract method `build()`.
 
 In `KerasLayer.build()`, you will get the current input shape to instantiate the actual module and return it. The arguments are stored by `self.args` and `self.kwargs`.
 
@@ -73,4 +55,3 @@ Note that `KerasLayer` should be used as a wrapper only, which means your native
 + Add
 + Reshape
 + Concatenate
-+ SamePadding
