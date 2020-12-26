@@ -19,7 +19,7 @@ class Mish(nn.Module):
         super(Mish, self).__init__()
     
     def forward(self, x):
-        return x * F.tanh(F.softplus(x))
+        return x * torch.tanh(F.softplus(x))
 
 class Swish(nn.Module):
     """
@@ -35,7 +35,7 @@ class Swish(nn.Module):
         self.beta = nn.Parameter(torch.tensor(1.0, dtype=torch.float), requires_grad=True)
 
     def forward(self, x):
-        return x * F.sigmoid(self.beta * x)
+        return x * torch.sigmoid(self.beta * x)
 
 
 
