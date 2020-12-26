@@ -1,0 +1,260 @@
+import torch
+import numpy as np
+from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler, Subset
+from collections import OrderedDict
+from .._summary import summary
+
+from .._training import Trainer
+from ..layers import KerasLayer
+from ..metrics import Metric
+from ..metrics import _create_metric
+from ..losses import _create_loss
+from ..optimizers import _create_optimizer
+from ..activations import _create_activation
+from ..utils import to_tensor, _get_num_workers
+
+
+class Model(torch.nn.Module):
+    """
+    `Model` wraps a `nn.Module` with training and inference features.
+
+    Once the model is wrapped, you can config the model with losses and metrics\n  with `model.compile()`, train the model with `model.fit()`, or use the model\n  to do prediction with `model.predict()`.
+    """
+    def __init__(self, model):
+        super(Model, self).__init__()
+        self._k4t_model_tag = 0
+        assert not hasattr(model, '_k4t_model_tag')
+
+        self.model = model
+        self.compiled = False
+        self.built = False
+        self.input_shape = None
+
+        def dfs(m):
+            for child in m.children():
+                if isinstance(child, KerasLayer) or dfs(child):
+                    return True
+            return False
+        self._has_keras_layer = dfs(self)
+
+    def forward(self, x):
+        return self.model(x)
+
+    def count_params(self) -> int:
+        """Count the total number of scalars composing the weights."""
+        return sum([p.numel() for p in self.parameters()])
+
+    def trainable_params(self):
+        """Return all trainable parameters of the model."""
+        return filter(lambda p: p.requires_grad, self.parameters())
+
+    ########## keras-style methods below ##########
+
+    @torch.no_grad()
+    def build(self, input_shape, dtype=torch.float32):
+        """Build the model when it contains `KerasLayer`."""
+        if self._has_keras_layer:
+            batch_shape = [2] + list(input_shape)
+            probe_input = torch.zeros(size=batch_shape).to(dtype=dtype)
+            self.model(probe_input)
+        self.built = True
+        self.input_shape = list(input_shape)
+        return self
+
+    def _check_keras_layer(self):
+        if self._has_keras_layer and not self.built:
+            raise AssertionError(
+                "You need to build the model via `.build()` before this operation. Because it contains `KerasLayer`."
+                )
+
+    def summary(self, input_shape=None, depth=3, device=None):
+        """Print a string summary of the network."""
+        self._check_keras_layer()
+        if input_shape is None:
+            input_shape = self.input_shape
+        assert (input_shape is not None)
+
+        if device is None:
+            device = self.trainer.device if self.compiled else 'cpu'
+
+        summary(self.model, input_shape, depth=depth, verbose=1, device=device)
+
+    def compile(self, optimizer, loss, metrics=None, device=None):
+        """
+        Configure the model for training.
+
+        Args:
+
+        * `optimizer`: String (name of optimizer) or optimizer instance.
+
+        * `loss`: String (name of objective function), objective function or loss instance.
+
+        * `metrics`: List of metrics to be evaluated by the model during training. You can also use dict to specify the 
+        abbreviation of each metric.
+
+        * `device`: Device of the model and its trainer, if `None` 'cuda' will be used when `torch.cuda.is_available()` otherwise 'cpu'.
+        """
+        self._check_keras_layer()
+        if device == None:
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            
+        loss = _create_loss(loss)
+        optimizer = _create_optimizer(optimizer, self.trainable_params())
+
+        m = OrderedDict({'loss': loss})
+        if isinstance(metrics, dict):
+            m.update(metrics)
+        elif isinstance(metrics, list):
+            for tmp_m in metrics:
+                tmp_m = _create_metric(tmp_m)
+                if isinstance(tmp_m, Metric):
+                    m[tmp_m.get_abbr()] = tmp_m
+                elif hasattr(tmp_m, '__call__'):
+                    m[tmp_m.__name__] = tmp_m
+                else:
+                    raise TypeError('Unsupported type.')
+        elif not (metrics is None):
+            raise TypeError('Argument `metrics` should be either a dict or list.')
+
+        self.to(device=device)
+        self.trainer = Trainer(model=self, optimizer=optimizer, loss=loss, metrics=m, device=device)
+        self.compiled = True
+
+
+    def fit_dl(self, train_loader, epochs,
+                val_loader=None,
+                callbacks=[],
+                verbose=1,
+                use_amp=False):
+
+        assert self.compiled
+        self.trainer.register_callbacks(callbacks)
+        history = self.trainer.run(train_loader, val_loader, max_epochs=epochs, verbose=verbose, use_amp=use_amp)
+
+        return history
+
+
+    def fit(self, x, y, epochs, batch_size=32,
+                validation_split=None, shuffle_val_split=True,
+                validation_data=None,
+                callbacks=[],
+                verbose=1,
+                shuffle=True,
+                sample_weight=None,
+                num_workers=0,
+                use_amp=False
+                ):
+        """
+        Train the model for a fixed number of epochs (iterations on a dataset).
+
+        Args:
+
+        * `x` (`ndarray` or `torch.Tensor`): Input data 
+
+        * `y` (`ndarray` or `torch.Tensor`): Target data
+
+        * `epochs` (int): Number of epochs to train the model
+
+        * `batch_size` (int, default=32): Number of samples per gradient update
+
+        * `validation_split` (float between 0 and 1): Fraction of the training data to be used as validation data
+
+        * `shuffle_val_split` (bool, default=True): Whether to do shuffling when `validation_split` is provided
+
+        * `validation_data` (tuple of `x` and `y`): Data on which to evaluate the loss and any model metrics at the end of each epoch
+        
+        * `callbacks` (list of `keras4torch.callbacks.Callback`): List of callbacks to apply during training
+
+        * `verbose` (int, default=1): 0, 1, or 2. Verbosity mode. 0 = silent, 1 = normal, 2 = compat
+
+        * `shuffle` (bool, default=True): Whether to shuffle the training data before each epoch
+
+        * `sample_weight` (list of floats): Optional weights for the training samples. If provided will enable `WeightedRandomSampler`
+        
+        * `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
+
+        * `use_amp` (bool, default=False): Whether to use automatic mixed precision
+        """
+
+        assert self.compiled
+        x, y = to_tensor(x, y)
+
+        assert not (validation_data != None and validation_split != None)
+        has_val = validation_data != None or validation_split != None
+        
+        train_set = TensorDataset(x, y)
+
+        if validation_data != None:
+            x_val, y_val = to_tensor(validation_data[0], validation_data[1])
+            val_set = TensorDataset(x_val, y_val)
+
+        if validation_split != None:
+            val_length = int(len(train_set) * validation_split)
+            idx = np.arange(0, len(train_set))
+            if shuffle_val_split:
+                np.random.seed(1234567890)
+                np.random.shuffle(idx)
+            train_set, val_set = Subset(train_set, idx[:-val_length]), Subset(train_set, idx[-val_length:])
+            if sample_weight is not None:
+                assert len(sample_weight) == len(x)
+                sample_weight = [sample_weight[i] for i in idx[:-val_length]]
+
+        if sample_weight is not None:
+            sampler = WeightedRandomSampler(sample_weight, len(sample_weight))
+            shuffle = None
+        else:
+            sampler = None
+        
+        dl_kwargs = {'batch_size': batch_size, 'num_workers': _get_num_workers(num_workers)}
+        train_loader = DataLoader(train_set, shuffle=shuffle, sampler=sampler, **dl_kwargs)
+        val_loader = DataLoader(val_set, shuffle=False, **dl_kwargs) if has_val else None
+
+        return self.fit_dl(train_loader, epochs, val_loader, callbacks, verbose, use_amp)
+
+    @torch.no_grad()
+    def evaluate(self, x, y, batch_size=32, num_workers=0, use_amp=False):
+        """Return the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
+        x, y = to_tensor(x, y)
+        val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
+        return self.evaluate_dl(val_loader, use_amp)
+
+    @torch.no_grad()
+    def evaluate_dl(self, data_loader, use_amp=False):
+        assert self.compiled
+        return self.trainer.evaluate(data_loader, use_amp)
+
+    @torch.no_grad()
+    def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None):
+        self._check_keras_layer()
+        if device == None:
+            if self.compiled:
+                device = self.trainer.device
+            else:
+                device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.eval().to(device=device)
+
+        outputs = [self(x_batch[0].to(device=device)) for x_batch in data_loader]
+        outputs = torch.cat(outputs, dim=0)
+
+        activation = _create_activation(activation)
+        if activation != None:
+            outputs = activation(outputs)
+
+        return outputs.cpu().numpy() if output_numpy else outputs
+
+    @torch.no_grad()
+    def predict(self, inputs, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0):
+        """
+        Generate output predictions for the input samples.\n\n    Computation is done in batches.
+        """
+        inputs = to_tensor(inputs)
+        data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
+        return self.predict_dl(data_loader, device=device, output_numpy=output_numpy, activation=activation)
+
+    def save_weights(self, filepath):
+        """Equal to `torch.save(model.state_dict(), filepath)`."""
+        torch.save(self.state_dict(), filepath)
+
+    def load_weights(self, filepath):
+        """Equal to `model.load_state_dict(torch.load(filepath))`."""
+        self.load_state_dict(torch.load(filepath))
