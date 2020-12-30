@@ -37,8 +37,8 @@ class Model(torch.nn.Module):
             return False
         self._has_keras_layer = dfs(self)
 
-    def forward(self, x):
-        return self.model(x)
+    def forward(self, *args):
+        return self.model(*args)
 
     def count_params(self) -> int:
         """Count the total number of scalars composing the weights."""
@@ -51,14 +51,18 @@ class Model(torch.nn.Module):
     ########## keras-style methods below ##########
 
     @torch.no_grad()
-    def build(self, input_shape, dtype=torch.float32):
+    def build(self, input_shape):
         """Build the model when it contains `KerasLayer`."""
-        if self._has_keras_layer:
+        if isinstance(input_shape[0], list) or isinstance(input_shape[0], tuple):
+            batch_shapes = [ [2]+list(i) for i in input_shape]
+            probe_inputs = [torch.zeros(size=s) for s in batch_shapes]
+        else:
             batch_shape = [2] + list(input_shape)
-            probe_input = torch.zeros(size=batch_shape).to(dtype=dtype)
-            self.model(probe_input)
+            probe_inputs = [torch.zeros(size=batch_shape)]
+        self.model(*probe_inputs)
+
         self.built = True
-        self.input_shape = list(input_shape)
+        self._probe_inputs = probe_inputs
         return self
 
     def _check_keras_layer(self):
@@ -67,17 +71,16 @@ class Model(torch.nn.Module):
                 "You need to build the model via `.build()` before this operation. Because it contains `KerasLayer`."
                 )
 
-    def summary(self, input_shape=None, depth=3, device=None):
+    def summary(self, depth=3, device=None):
         """Print a string summary of the network."""
         self._check_keras_layer()
-        if input_shape is None:
-            input_shape = self.input_shape
-        assert (input_shape is not None)
+        if not self.built:
+            raise AssertionError('Build the model first before you call `.summary()`.')
 
         if device is None:
             device = self.trainer.device if self.compiled else 'cpu'
-
-        summary(self.model, input_shape, depth=depth, verbose=1, device=device)
+        
+        summary(self.model, self._probe_inputs, depth=depth, verbose=1, device=device)
 
     def compile(self, optimizer, loss, metrics=None, device=None):
         """
@@ -149,7 +152,7 @@ class Model(torch.nn.Module):
 
         Args:
 
-        * `x` (`ndarray` or `torch.Tensor`): Input data 
+        * `x` (`ndarray` or `torch.Tensor` or list): Input data
 
         * `y` (`ndarray` or `torch.Tensor`): Target data
 
@@ -177,16 +180,20 @@ class Model(torch.nn.Module):
         """
 
         assert self.compiled
+        if not isinstance(x, list) and not isinstance(x, tuple):
+            x = [x]
         x, y = to_tensor(x, y)
 
         assert not (validation_data != None and validation_split != None)
         has_val = validation_data != None or validation_split != None
         
-        train_set = TensorDataset(x, y)
+        train_set = TensorDataset(*x, y)
 
         if validation_data != None:
             x_val, y_val = to_tensor(validation_data[0], validation_data[1])
-            val_set = TensorDataset(x_val, y_val)
+            if not isinstance(x_val, list) and not isinstance(x_val, tuple):
+                x_val = [x_val]
+            val_set = TensorDataset(*x_val, y_val)
 
         if validation_split != None:
             val_length = int(len(train_set) * validation_split)
@@ -196,7 +203,7 @@ class Model(torch.nn.Module):
                 np.random.shuffle(idx)
             train_set, val_set = Subset(train_set, idx[:-val_length]), Subset(train_set, idx[-val_length:])
             if sample_weight is not None:
-                assert len(sample_weight) == len(x)
+                assert len(sample_weight) == len(y)
                 sample_weight = [sample_weight[i] for i in idx[:-val_length]]
 
         if sample_weight is not None:
@@ -214,8 +221,10 @@ class Model(torch.nn.Module):
     @torch.no_grad()
     def evaluate(self, x, y, batch_size=32, num_workers=0, use_amp=False):
         """Return the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
+        if not isinstance(x, list) and not isinstance(x, tuple):
+            x = [x]
         x, y = to_tensor(x, y)
-        val_loader = DataLoader(TensorDataset(x, y), batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
+        val_loader = DataLoader(TensorDataset(*x, y), batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
         return self.evaluate_dl(val_loader, use_amp)
 
     @torch.no_grad()
@@ -233,7 +242,10 @@ class Model(torch.nn.Module):
                 device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.eval().to(device=device)
 
-        outputs = [self(x_batch[0].to(device=device)) for x_batch in data_loader]
+        outputs = []
+        for t in data_loader:
+            t = [ti.to(device=device) for ti in t]
+            outputs.append(self(*t))
         outputs = torch.cat(outputs, dim=0)
 
         activation = _create_activation(activation)
@@ -243,12 +255,13 @@ class Model(torch.nn.Module):
         return outputs.cpu().numpy() if output_numpy else outputs
 
     @torch.no_grad()
-    def predict(self, inputs, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0):
+    def predict(self, x, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0):
         """
         Generate output predictions for the input samples.\n\n    Computation is done in batches.
         """
-        inputs = to_tensor(inputs)
-        data_loader = DataLoader(TensorDataset(inputs), batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
+        if not isinstance(x, list) and not isinstance(x, tuple):
+            x = [x]
+        data_loader = DataLoader(TensorDataset(*to_tensor(x)), batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
         return self.predict_dl(data_loader, device=device, output_numpy=output_numpy, activation=activation)
 
     def save_weights(self, filepath):

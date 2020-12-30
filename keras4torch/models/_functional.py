@@ -1,7 +1,6 @@
 import torch
 from ._wrapper import Model
 from ..activations import _create_activation
-from collections.abc import Iterable
 
 """
 Bug warning:
@@ -41,7 +40,7 @@ class SymbolicTensor(SymbolicTensorBase):
         self._cached_output = None
 
     def _deep_eval(self, args):
-        if isinstance(args, Iterable):
+        if isinstance(args, list) or isinstance(args, tuple):
             return type(args)([self._deep_eval(i) for i in args])
         else:
             return args.eval()       # leaf
@@ -118,7 +117,7 @@ class Functional(object):
         self._modules = set()
         self._symbolic_tensors = []
 
-        print('[Warning] Functional API is a beta feature. Do not use it for production.')
+        print('\033[33m' + '[Warning] Functional API is a beta feature. Do not use it for production.')
 
     def input(self, input_shape, dtype=torch.float32):
         assert self._fn_module.inputs is None

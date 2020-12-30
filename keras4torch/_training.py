@@ -40,14 +40,12 @@ class Trainer(object):
         self.logger.on_train_begin(verbose, train_loader, val_loader)
         self.__fire_event(Events.ON_TRAIN_BEGIN)
 
-        train_fn = self.train_fast_mode
-
         for epoch in range(1, max_epochs+1):
             self.epoch = epoch
             self.logger.on_epoch_begin()
             self.__fire_event(Events.ON_EPOCH_BEGIN)
 
-            train_metrics = train_fn(train_loader)
+            train_metrics = self.train_on_epoch(train_loader)
             val_metrics = self.evaluate(val_loader, self.use_amp) if val_loader else {}
 
             self.logger.on_epoch_end(epoch=epoch, max_epochs=max_epochs, train_metrics=train_metrics, val_metrics=val_metrics)
@@ -68,28 +66,28 @@ class Trainer(object):
         return metrics
 
 
-    def train_fast_mode(self, data_loader):
+    def train_on_epoch(self, data_loader):
         self.model.train()
         y_true, y_pred = [], []
         
         grad_scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
 
         for t in data_loader:
-            x = t[0].to(device=self.device)
-            y = t[1].to(device=self.device)
-                
-            self.optimizer.zero_grad()  # https://pytorch.org/docs/stable/optim.html#torch.optim.Optimizer.zero_grad
+            t = [ti.to(device=self.device) for ti in t]
+            x_batch, y_batch = t[:-1], t[-1]
+
+            self.optimizer.zero_grad()
 
             with torch.cuda.amp.autocast(enabled=self.use_amp):
-                y_batch_pred = self.model(x)
-                loss = self.loss(y_batch_pred, y)
+                y_batch_pred = self.model(*x_batch)
+                loss = self.loss(y_batch_pred, y_batch)
 
             grad_scaler.scale(loss).backward()
             grad_scaler.step(self.optimizer)
             grad_scaler.update()
 
             y_pred.append(y_batch_pred.detach())
-            y_true.append(y)
+            y_true.append(y_batch)
 
         y_true = torch.cat(y_true)
         y_pred = torch.cat(y_pred)
@@ -102,18 +100,17 @@ class Trainer(object):
         y_true, y_pred = [], []
  
         for t in data_loader:
-            x = t[0].to(device=self.device)
-            y = t[1].to(device=self.device)
+            t = [ti.to(device=self.device) for ti in t]
+            x_batch, y_batch = t[:-1], t[-1]
 
             with torch.cuda.amp.autocast(enabled=use_amp):
-                y_batch_pred = self.model(x)
+                y_batch_pred = self.model(*x_batch)
 
             y_pred.append(y_batch_pred) 
-            y_true.append(y)
+            y_true.append(y_batch)
 
         y_true = torch.cat(y_true)
         y_pred = torch.cat(y_pred)
-
         return self.__calc_metrics(y_pred, y_true)
 
 
