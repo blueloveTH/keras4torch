@@ -2,6 +2,7 @@ import torch
 import time
 import pandas as pd
 from enum import Enum
+from .utils import Progbar
 
 class Events(Enum):
     ON_EPOCH_END = 'on_epoch_end'
@@ -18,7 +19,6 @@ class Trainer(object):
     def __init__(self, **kwargs) -> None:
         for key, value in kwargs.items():
             setattr(self, key, value)
-        self.logger = Logger(self)
     
     def register_callbacks(self, callbacks):
         self.event_dict = {Events(k).value: list() for k in Events}
@@ -35,14 +35,16 @@ class Trainer(object):
             func(self)
 
     def run(self, train_loader, val_loader, max_epochs, verbose, use_amp):
+        self.logger = Logger(self, verbose=verbose)
+
         self.use_amp = use_amp if self.device == 'cuda' else False
         self.max_epochs = max_epochs
-        self.logger.on_train_begin(verbose, train_loader, val_loader)
+        self.logger.on_train_begin(train_loader, val_loader)
         self.__fire_event(Events.ON_TRAIN_BEGIN)
 
         for epoch in range(1, max_epochs+1):
             self.epoch = epoch
-            self.logger.on_epoch_begin()
+            self.logger.on_epoch_begin(epoch=epoch, max_epochs=max_epochs, data_loader=train_loader)
             self.__fire_event(Events.ON_EPOCH_BEGIN)
 
             train_metrics = self.train_on_epoch(train_loader)
@@ -88,6 +90,8 @@ class Trainer(object):
             y_pred.append(y_batch_pred.detach())
             y_true.append(y_batch)
 
+            self.logger.on_batch_end()
+
         y_pred, y_true = torch.cat(y_pred), torch.cat(y_true)
         return self.__calc_metrics(y_pred, y_true)
 
@@ -111,11 +115,11 @@ class Trainer(object):
 
 
 class Logger(object):
-    def __init__(self, trainer):
+    def __init__(self, trainer, verbose):
         self.trainer = trainer
-
-    def on_train_begin(self, verbose, train_loader, val_loader):
         self.verbose = verbose
+
+    def on_train_begin(self, train_loader, val_loader):
         if self.verbose == 0:
             return None
         if val_loader != None:
@@ -126,6 +130,18 @@ class Logger(object):
     def on_epoch_begin(self, **kwargs):
         self.time = time.time()
 
+        if self.verbose == 2:
+            print(f"Epoch {kwargs['epoch']}/{kwargs['max_epochs']}", end='')
+        if self.verbose == 1:
+            print(f"Epoch {kwargs['epoch']}/{kwargs['max_epochs']}")    # new line
+            self.bar = Progbar(len(kwargs['data_loader']))
+            self.step_count = 0
+
+    def on_batch_end(self):
+        if self.verbose == 1:
+            self.step_count += 1
+            self.bar.update(self.step_count)
+            
     def on_epoch_end(self, **kwargs):
         if not hasattr(self, 'history'):
             train_columns = [key for key in kwargs['train_metrics'].keys()]
@@ -135,9 +151,7 @@ class Logger(object):
         
         time_elapsed = time.time() - self.time
 
-        content = []
-        content.append(f"Epoch {kwargs['epoch']}/{kwargs['max_epochs']}")
-
+        content = ['']
         time_str = f'{round(time_elapsed, 1)}s' if time_elapsed < 9.5 else f'{int(time_elapsed + 0.5)}s'
         content.append(time_str)
         
@@ -152,7 +166,7 @@ class Logger(object):
 
         self.history.loc[kwargs['epoch']] = self.metrics
 
-        if self.verbose == 1:
+        if self.verbose > 0:
             print(' - '.join(content))
-        elif self.verbose == 2:
-            print('|'.join(content).replace(' ', '').replace('Epoch', ''))
+        #elif self.verbose == 3:
+        #    print('|'.join(content).replace(' ', '').replace('Epoch', ''))

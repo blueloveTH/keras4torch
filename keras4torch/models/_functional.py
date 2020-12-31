@@ -117,7 +117,7 @@ class Functional(object):
         self._modules = set()
         self._symbolic_tensors = []
 
-        print('\033[33m' + '[Warning] Functional API is a beta feature. Do not use it for production.')
+        print('[Warning] Functional API is a beta feature. Do not use it for production.')
 
     def input(self, input_shape, dtype=torch.float32):
         assert self._fn_module.inputs is None
@@ -142,5 +142,5 @@ class Functional(object):
 
         return Model(self._fn_module).build(
             self._fn_module.input_shape,
-            dtype=self._fn_module.input_dtype
+            #dtype=self._fn_module.input_dtype
         )

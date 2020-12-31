@@ -168,7 +168,7 @@ class Model(torch.nn.Module):
         
         * `callbacks` (list of `keras4torch.callbacks.Callback`): List of callbacks to apply during training
 
-        * `verbose` (int, default=1): 0, 1, or 2. Verbosity mode. 0 = silent, 1 = normal, 2 = compat
+        * `verbose` (int, default=1): 0, 1, or 2. Verbosity mode. 0 = silent, 1 = normal, 2 = brief
 
         * `shuffle` (bool, default=True): Whether to shuffle the training data before each epoch
 
