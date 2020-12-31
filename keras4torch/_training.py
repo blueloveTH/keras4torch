@@ -72,9 +72,8 @@ class Trainer(object):
         
         grad_scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
 
-        for t in data_loader:
-            t = [ti.to(device=self.device) for ti in t]
-            x_batch, y_batch = t[:-1], t[-1]
+        for t_batch in data_loader:
+            *x_batch, y_batch = [t.to(device=self.device) for t in t_batch]
 
             self.optimizer.zero_grad()
 
@@ -89,9 +88,7 @@ class Trainer(object):
             y_pred.append(y_batch_pred.detach())
             y_true.append(y_batch)
 
-        y_true = torch.cat(y_true)
-        y_pred = torch.cat(y_pred)
-
+        y_pred, y_true = torch.cat(y_pred), torch.cat(y_true)
         return self.__calc_metrics(y_pred, y_true)
 
     @torch.no_grad()
@@ -99,9 +96,8 @@ class Trainer(object):
         self.model.eval()
         y_true, y_pred = [], []
  
-        for t in data_loader:
-            t = [ti.to(device=self.device) for ti in t]
-            x_batch, y_batch = t[:-1], t[-1]
+        for t_batch in data_loader:
+            *x_batch, y_batch = [t.to(device=self.device) for t in t_batch]
 
             with torch.cuda.amp.autocast(enabled=use_amp):
                 y_batch_pred = self.model(*x_batch)
@@ -109,8 +105,7 @@ class Trainer(object):
             y_pred.append(y_batch_pred) 
             y_true.append(y_batch)
 
-        y_true = torch.cat(y_true)
-        y_pred = torch.cat(y_pred)
+        y_pred, y_true = torch.cat(y_pred), torch.cat(y_true)
         return self.__calc_metrics(y_pred, y_true)
 
 
