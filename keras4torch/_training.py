@@ -67,10 +67,12 @@ class Trainer(object):
             metrics[key] = score_fn(y_pred, y_true).mean().cpu().item()
         return metrics
 
+    def __empty_metrics(self):
+        return {key: 0.0 for key in self.metrics.keys()}
 
     def train_on_epoch(self, data_loader):
         self.model.train()
-        y_true, y_pred = [], []
+        metrics = self.__empty_metrics()
         
         grad_scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
 
@@ -87,18 +89,21 @@ class Trainer(object):
             grad_scaler.step(self.optimizer)
             grad_scaler.update()
 
-            y_pred.append(y_batch_pred.detach())
-            y_true.append(y_batch)
+            y_batch_pred = y_batch_pred.detach()
+
+            batch_metrics = self.__calc_metrics(y_batch_pred, y_batch)
+            for key, value in batch_metrics.items():
+                metrics[key] += value * len(y_batch)
 
             self.logger.on_batch_end()
 
-        y_pred, y_true = torch.cat(y_pred), torch.cat(y_true)
-        return self.__calc_metrics(y_pred, y_true)
+        total_count = len(data_loader.dataset) * 1.0
+        return {k:(v/total_count) for k,v in metrics.items()}
 
     @torch.no_grad()
     def evaluate(self, data_loader, use_amp):
         self.model.eval()
-        y_true, y_pred = [], []
+        metrics = self.__empty_metrics()
  
         for t_batch in data_loader:
             *x_batch, y_batch = [t.to(device=self.device) for t in t_batch]
@@ -106,11 +111,12 @@ class Trainer(object):
             with torch.cuda.amp.autocast(enabled=use_amp):
                 y_batch_pred = self.model(*x_batch)
 
-            y_pred.append(y_batch_pred) 
-            y_true.append(y_batch)
+            batch_metrics = self.__calc_metrics(y_batch_pred, y_batch)
+            for key, value in batch_metrics.items():
+                metrics[key] += value * len(y_batch)
 
-        y_pred, y_true = torch.cat(y_pred), torch.cat(y_true)
-        return self.__calc_metrics(y_pred, y_true)
+        total_count = len(data_loader.dataset) * 1.0
+        return {k:(v/total_count) for k,v in metrics.items()}
 
 
 
