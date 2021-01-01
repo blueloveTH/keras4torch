@@ -132,5 +132,22 @@ def _create_metric(i):
         return i
 
 
+def _to_metrics_dic(metrics):
+    m = OrderedDict()
+    if isinstance(metrics, dict):
+        m.update(metrics)
+    elif isinstance(metrics, list):
+        for tmp_m in metrics:
+            tmp_m = _create_metric(tmp_m)
+            if isinstance(tmp_m, Metric):
+                m[tmp_m.get_abbr()] = tmp_m
+            elif hasattr(tmp_m, '__call__'):
+                m[tmp_m.__name__] = tmp_m
+            else:
+                raise TypeError('Unsupported type.')
+    elif not (metrics is None):
+        raise TypeError('Argument `metrics` should be either a dict or list.')
+    return m
+
 __all__ = ['Metric', 'Accuracy', 'categorical_accuracy', 'binary_accuracy',
                 'SklearnMetric', 'ROC_AUC', 'F1_Score', 'MeanSquaredError', 'MeanAbsoluteError', 'RootMeanSquaredError']
