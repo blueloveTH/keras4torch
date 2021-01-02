@@ -46,7 +46,7 @@ class Progbar(object):
         self._seen_so_far = 0
         self._start = time.time()
         self._last_update = 0
-        self._total_length = 0
+        self._total_width = 0
 
         self._dynamic_display = ((hasattr(sys.stdout, 'isatty') and
                                 sys.stdout.isatty()) or
@@ -56,23 +56,26 @@ class Progbar(object):
 
         self._time_after_first_step = None
 
-    def update(self, current, avg_batch_metrics={}, finalize=None):
-        if finalize is None:
-            finalize = current >= self.target
+    def __reset_pos(self, length):
+        if self._dynamic_display:
+            sys.stdout.write('\b' * length)
+            sys.stdout.write('\r')
+        else:
+            sys.stdout.write('\n')
+
+    def update(self, current, avg_batch_metrics={}, finalize=False):  
+        if current >= self.target and finalize == False:
+            return
 
         self._seen_so_far = current
 
         now = time.time()
-        info = ''
 
         if now - self._last_update < self.interval and not finalize:
             return
 
-        if self._dynamic_display:
-            sys.stdout.write('\b' * self._total_length)
-            sys.stdout.write('\r')
-        else:
-            sys.stdout.write('\n')
+        prev_total_width = self._total_width
+        self.__reset_pos(prev_total_width)
 
         numdigits = int(np.log10(self.target)) + 1
         bar = ('%' + str(numdigits) + 'd/%d [') % (current, self.target)
@@ -108,7 +111,12 @@ class Progbar(object):
             if avg_batch_metrics:
                 info += ' - ' + ' - '.join(['{}: {:.4f}'.format(k, v) for k,v in avg_batch_metrics.items()])
 
-            sys.stdout.write(info)   
+            self._total_width += len(info)
+            pad_count = prev_total_width - self._total_width
+            if pad_count > 0:
+                info += (' ' * pad_count)
+
+            sys.stdout.write(info)
             sys.stdout.flush()
 
         self._last_update = now

@@ -197,7 +197,7 @@ class Logger(object):
     def on_batch_end(self, metrics_rec: MetricsRecorder):
         if self.verbose == 1:
             self.step_count += 1
-            self.bar.update(self.step_count, metrics_rec.average_batch_metrics())
+            self.bar.update(self.step_count, metrics_rec.average_batch_metrics(), finalize=False)
             
     def on_epoch_end(self, epoch, train_metrics: OrderedDict, val_metrics: OrderedDict):        
         time_elapsed = time.time() - self.time
@@ -219,4 +219,6 @@ class Logger(object):
         self.history.loc[epoch] = self.metrics
 
         if self.verbose > 0:
-            print(' - '.join(content))
+            if self.verbose == 1:
+                self.bar.update(self.step_count, {}, finalize=True)
+            print(' - '.join(content), flush=True)
