@@ -5,6 +5,8 @@ from enum import Enum
 from collections import OrderedDict
 from .utils import Progbar
 
+from ._custom_training import create_batch_training_loop, create_batch_validation_loop
+
 class Events(Enum):
     ON_EPOCH_END = 'on_epoch_end'
     ON_EPOCH_BEGIN = 'on_epoch_begin'
@@ -73,6 +75,9 @@ class Trainer(object):
     def __init__(self, **kwargs) -> None:
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+        self.batch_training_loop = create_batch_training_loop()
+        self.batch_validation_loop = create_batch_validation_loop()
     
     def register_callbacks(self, callbacks):
         self.event_dict = {Events(k).value: list() for k in Events}
@@ -120,43 +125,48 @@ class Trainer(object):
     def train_on_epoch(self, data_loader):
         self.model.train()
         metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
-        
         grad_scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
 
-        for batch in data_loader:
-            batch = [i.to(device=self.device) for i in batch]
-            *x_batch, y_batch = batch
+        loop = self.batch_training_loop
 
+        for batch in data_loader:
+            x_batch, y_batch = loop['process_batch'](batch, device=self.device)
             self.optimizer.zero_grad()
 
             with torch.cuda.amp.autocast(enabled=self.use_amp):
-                y_batch_pred = self.model(*x_batch)
+                y_batch_pred, y_batch = loop['forward_call'](self.model, x_batch, y_batch)
                 loss = self.loss(y_batch_pred, y_batch)
 
             grad_scaler.scale(loss).backward()
             grad_scaler.step(self.optimizer)
             grad_scaler.update()
 
-            metrics_rec.update(y_batch_pred.detach(), y_batch)
+            y_batch_pred = y_batch_pred.detach()
+            loop['metrics_update'](metrics_rec, y_batch_pred, y_batch)
+
+            ################
 
             self.logger.on_batch_end(metrics_rec)
 
         return metrics_rec.average()
 
+    
+
     @torch.no_grad()
     def evaluate(self, data_loader, use_amp):
         self.model.eval()
-
         metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
+
+        loop = self.batch_validation_loop
  
         for batch in data_loader:
-            batch = [i.to(device=self.device) for i in batch]
-            *x_batch, y_batch = batch
+            x_batch, y_batch = loop['process_batch'](batch, device=self.device)
 
             with torch.cuda.amp.autocast(enabled=use_amp):
-                y_batch_pred = self.model(*x_batch)
+                y_batch_pred, y_batch = loop['forward_call'](self.model, x_batch, y_batch)
 
-            metrics_rec.update(y_batch_pred.detach(), y_batch)
+            y_batch_pred = y_batch_pred.detach()
+            loop['metrics_update'](metrics_rec, y_batch_pred, y_batch)
 
         return metrics_rec.average()
 
@@ -210,5 +220,3 @@ class Logger(object):
 
         if self.verbose > 0:
             print(' - '.join(content))
-        #elif self.verbose == 3:
-        #    print('|'.join(content).replace(' ', '').replace('Epoch', ''))

@@ -242,7 +242,8 @@ class Model(torch.nn.Module):
 
         outputs = []
         for batch in data_loader:
-            batch = [i.to(device=device) for i in batch]
+            for i in range(len(batch)):
+                batch[i] = batch[i].to(device=device)
 
             with torch.cuda.amp.autocast(enabled=use_amp):
                 outputs.append(self(*batch))
