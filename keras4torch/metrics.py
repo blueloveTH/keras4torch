@@ -37,11 +37,11 @@ class SklearnMetric(Metric):
         self.activation = activation
 
         try:
-            import sklearn
+            from sklearn import metrics as sklearn_metrics
         except ImportError:
             raise RuntimeError("This metric requires sklearn to be installed.")
 
-        self.score_fn = self.get_score_fn(sklearn)
+        self.score_fn = self.get_score_fn(sklearn_metrics)
 
     def __call__(self, y_pred, y_true):
         _device = y_pred.device
@@ -52,7 +52,7 @@ class SklearnMetric(Metric):
         return torch.tensor(self.score_fn(y_true, y_pred), dtype=torch.float32, device=_device)
 
     @abstractclassmethod
-    def get_score_fn(self, sklearn_module):
+    def get_score_fn(self, sklearn_metrics):
         pass
 
 
@@ -60,8 +60,8 @@ class ROC_AUC(SklearnMetric):
     def __init__(self, activation=torch.sigmoid) -> None:
         super(ROC_AUC, self).__init__(activation=activation)
 
-    def get_score_fn(self, sklearn):
-        return sklearn.metrics.roc_auc_score
+    def get_score_fn(self, sklearn_metrics):
+        return sklearn_metrics.roc_auc_score
 
     def get_abbr(self) -> str:
         return 'auc'
@@ -70,8 +70,8 @@ class F1_Score(SklearnMetric):
     def __init__(self, activation=torch.sigmoid) -> None:
         super(F1_Score, self).__init__(activation=lambda x: torch.round(activation(x)))
 
-    def get_score_fn(self, sklearn):
-        return sklearn.metrics.f1_score
+    def get_score_fn(self, sklearn_metrics):
+        return sklearn_metrics.f1_score
 
     def get_abbr(self) -> str:
         return 'f1'

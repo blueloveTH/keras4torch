@@ -228,7 +228,7 @@ class Model(torch.nn.Module):
     @torch.no_grad()
     def evaluate_dl(self, data_loader, use_amp=False):
         assert self.compiled
-        return self.trainer.evaluate(data_loader, use_amp)
+        return dict(self.trainer.evaluate(data_loader, use_amp))
 
     @torch.no_grad()
     def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None, use_amp=False):
@@ -242,7 +242,7 @@ class Model(torch.nn.Module):
 
         outputs = []
         for batch in data_loader:
-            batch = [i.to(device=self.device) for i in batch]
+            batch = [i.to(device=device) for i in batch]
 
             with torch.cuda.amp.autocast(enabled=use_amp):
                 outputs.append(self(*batch))
