@@ -1,6 +1,6 @@
-from abc import abstractclassmethod
-from ._training import Trainer, StopTrainingError, Events
 import numpy as np
+from ._training import Trainer, StopTrainingError, Events
+from .metrics import _to_metrics_dic
 
 class Callback():
     def __init__(self) -> None:

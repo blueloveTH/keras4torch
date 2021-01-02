@@ -37,11 +37,11 @@ class SklearnMetric(Metric):
         self.activation = activation
 
         try:
-            import sklearn
+            from sklearn import metrics as sklearn_metrics
         except ImportError:
             raise RuntimeError("This metric requires sklearn to be installed.")
 
-        self.score_fn = self.get_score_fn(sklearn)
+        self.score_fn = self.get_score_fn(sklearn_metrics)
 
     def __call__(self, y_pred, y_true):
         _device = y_pred.device
@@ -52,7 +52,7 @@ class SklearnMetric(Metric):
         return torch.tensor(self.score_fn(y_true, y_pred), dtype=torch.float32, device=_device)
 
     @abstractclassmethod
-    def get_score_fn(self, sklearn_module):
+    def get_score_fn(self, sklearn_metrics):
         pass
 
 
@@ -60,8 +60,8 @@ class ROC_AUC(SklearnMetric):
     def __init__(self, activation=torch.sigmoid) -> None:
         super(ROC_AUC, self).__init__(activation=activation)
 
-    def get_score_fn(self, sklearn):
-        return sklearn.metrics.roc_auc_score
+    def get_score_fn(self, sklearn_metrics):
+        return sklearn_metrics.roc_auc_score
 
     def get_abbr(self) -> str:
         return 'auc'
@@ -70,8 +70,8 @@ class F1_Score(SklearnMetric):
     def __init__(self, activation=torch.sigmoid) -> None:
         super(F1_Score, self).__init__(activation=lambda x: torch.round(activation(x)))
 
-    def get_score_fn(self, sklearn):
-        return sklearn.metrics.f1_score
+    def get_score_fn(self, sklearn_metrics):
+        return sklearn_metrics.f1_score
 
     def get_abbr(self) -> str:
         return 'f1'
@@ -131,6 +131,23 @@ def _create_metric(i):
     else:
         return i
 
+
+def _to_metrics_dic(metrics):
+    m = OrderedDict()
+    if isinstance(metrics, dict):
+        m.update(metrics)
+    elif isinstance(metrics, list):
+        for tmp_m in metrics:
+            tmp_m = _create_metric(tmp_m)
+            if isinstance(tmp_m, Metric):
+                m[tmp_m.get_abbr()] = tmp_m
+            elif hasattr(tmp_m, '__call__'):
+                m[tmp_m.__name__] = tmp_m
+            else:
+                raise TypeError('Unsupported type.')
+    elif not (metrics is None):
+        raise TypeError('Argument `metrics` should be either a dict or list.')
+    return m
 
 __all__ = ['Metric', 'Accuracy', 'categorical_accuracy', 'binary_accuracy',
                 'SklearnMetric', 'ROC_AUC', 'F1_Score', 'MeanSquaredError', 'MeanAbsoluteError', 'RootMeanSquaredError']

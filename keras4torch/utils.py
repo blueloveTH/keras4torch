@@ -56,7 +56,7 @@ class Progbar(object):
 
         self._time_after_first_step = None
 
-    def update(self, current, finalize=None):
+    def update(self, current, avg_batch_metrics={}, finalize=None):
         if finalize is None:
             finalize = current >= self.target
 
@@ -105,7 +105,10 @@ class Progbar(object):
 
             info = ' - ETA: %s' % eta_format
 
-            sys.stdout.write(info)
+            if avg_batch_metrics:
+                info += ' - ' + ' - '.join(['{}: {:.4f}'.format(k, v) for k,v in avg_batch_metrics.items()])
+
+            sys.stdout.write(info)   
             sys.stdout.flush()
 
         self._last_update = now
