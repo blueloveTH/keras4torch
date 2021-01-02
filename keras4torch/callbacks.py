@@ -142,18 +142,5 @@ class LambdaCallback(Callback):
     def get_callbacks_dict(self):
         return self.callbacks_dict
 
-class EpochMetrics(Callback):
-    """Evaluate non-linear metrics(e.g. ROC_AUC) on epoch end."""
-    def __init__(self, metrics) -> None:
-        self.metrics = _to_metrics_dic(metrics)
 
-    def on_epoch_end(self, trainer):
-        train_loader, val_loader = trainer.dataloaders
-        metrics = trainer.evaluate_cpu(train_loader, self.metrics)
-        val_metrics = trainer.evaluate_cpu(val_loader, self.metrics) if val_loader != None else {}
-        metrics.update({('val_'+k): v for k,v in val_metrics.items()})
-        print(f'[Epoch Metrics] {metrics}')
-        
-
-
-__all__ = ['Callback', 'ModelCheckpoint', 'EarlyStopping', 'LRScheduler', 'LambdaCallback', 'EpochMetrics']
+__all__ = ['Callback', 'ModelCheckpoint', 'EarlyStopping', 'LRScheduler', 'LambdaCallback']

@@ -2,6 +2,7 @@ import torch
 import time
 import pandas as pd
 from enum import Enum
+from collections import OrderedDict
 from .utils import Progbar
 
 class Events(Enum):
@@ -15,18 +16,59 @@ class StopTrainingError(Exception):
     def __init__(self):
         pass
 
+@torch.no_grad()
+def calc_metrics(y_pred, y_true, metrics_dic):
+    metrics = {}
+    for key, score_fn in metrics_dic.items():
+        metrics[key] = score_fn(y_pred, y_true).mean().cpu().item()
+    return metrics
+
 class MetricsRecorder():
-    def __init__(self, keys) -> None:
-        self.metrics = {k: 0.0 for k in keys}
+    def __init__(self, metrics, epoch_metrics) -> None:
+        self.metrics = metrics
+        self.epoch_metrics = OrderedDict([('#'+k, v) for k,v in epoch_metrics.items()])
+
+        # for batch metrics
+        self.metrics = {k: 0.0 for k in self.metrics_dic.keys()}
         self.total_count = 0
 
-    def add(self, batch_metrics, count):
+        # for epoch metrics
+        self.y_pred = []
+        self.y_true = []
+
+    def update(self, y_batch_pred, y_batch):
+        self.__update_batch_metrics(y_batch_pred, y_batch)
+        if self.metrics_dic:
+            self.y_pred.append(y_batch_pred.cpu())
+            self.y_true.append(y_batch.cpu())
+
+    def __update_batch_metrics(self, y_batch_pred, y_batch, verbose=0):
+        batch_metrics = calc_metrics(y_batch_pred, y_batch, self.metrics_dic)
+        count = len(y_batch)
+
         for key, value in batch_metrics.items():
             self.metrics[key] += value * count
         self.total_count += count
 
-    def average(self):
+        if verbose == 1:
+            return self.average_batch_metrics()
+
+    def average_epoch_metrics(self, free_memory):
+        if not self.epoch_metrics:
+            return {}
+        t_0 = torch.cat(self.y_pred)
+        t_1 = torch.cat(self.y_true)
+        if free_memory:
+            del self.y_pred, self.y_true
+        return calc_metrics(t_0, t_1, self.metrics_dic)
+
+    def average_batch_metrics(self):
         return {k:(v/self.total_count) for k,v in self.metrics.items()}
+
+    def average(self, free_memory=True):
+        metrics = self.average_batch_metrics()
+        metrics.update(self.average_epoch_metrics(free_memory))
+        return metrics
 
 
 class Trainer(object):
@@ -77,23 +119,14 @@ class Trainer(object):
         self.__fire_event(Events.ON_TRAIN_END)
         return self.logger.history
 
-    @torch.no_grad()
-    @staticmethod
-    def __calc_metrics(y_pred, y_true, metrics_dic):
-        metrics = {}
-        for key, score_fn in metrics_dic.items():
-            metrics[key] = score_fn(y_pred, y_true).mean().cpu().item()
-        return metrics
-
     def train_on_epoch(self, data_loader):
         self.model.train()
-        metrics_recorder = MetricsRecorder(self.metrics.keys())
+        metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
         
         grad_scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
 
         for batch in data_loader:
-            for i in range(len(batch)):
-                batch[i] = batch[i].to(device=self.device)
+            batch = [i.to(device=self.device) for i in batch]
             *x_batch, y_batch = batch
 
             self.optimizer.zero_grad()
@@ -106,61 +139,30 @@ class Trainer(object):
             grad_scaler.step(self.optimizer)
             grad_scaler.update()
 
-            y_batch_pred = y_batch_pred.detach()
+            metrics_rec.update(y_batch_pred.detach(), y_batch)
 
-            batch_metrics = self.__calc_metrics(y_batch_pred, y_batch, self.metrics)
-            metrics_recorder.add(batch_metrics, len(y_batch))
+            self.logger.on_batch_end(metrics_rec)
 
-            self.logger.on_batch_end()
-
-        return metrics_recorder.average()
+        return metrics_rec.average()
 
     @torch.no_grad()
     def evaluate(self, data_loader, use_amp=None):
         if use_amp is None:
             use_amp = self.use_amp
         self.model.eval()
-        metrics_recorder = MetricsRecorder(self.metrics.keys())
+
+        metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
  
         for batch in data_loader:
-            for i in range(len(batch)):
-                batch[i] = batch[i].to(device=self.device)
+            batch = [i.to(device=self.device) for i in batch]
             *x_batch, y_batch = batch
 
             with torch.cuda.amp.autocast(enabled=use_amp):
                 y_batch_pred = self.model(*x_batch)
 
-            y_batch_pred = y_batch_pred.detach()
+            metrics_rec.update(y_batch_pred.detach(), y_batch)
 
-            batch_metrics = self.__calc_metrics(y_batch_pred, y_batch, self.metrics)
-            metrics_recorder.add(batch_metrics, len(y_batch))
-
-        return metrics_recorder.average()
-
-    @torch.no_grad()
-    def evaluate_cpu(self, data_loader, metrics_dic, use_amp=None):
-        if use_amp is None:
-            use_amp = self.use_amp
-        self.model.eval()
-        y_pred, y_true = [], []
- 
-        for batch in data_loader:
-            for i in range(len(batch)):
-                batch[i] = batch[i].to(device=self.device)
-            *x_batch, y_batch = batch
-
-            with torch.cuda.amp.autocast(enabled=use_amp):
-                y_batch_pred = self.model(*x_batch)
-
-            y_batch_pred = y_batch_pred.detach()
-
-            y_pred.append(y_batch_pred.cpu())
-            y_true.append(y_batch.cpu())
-
-        y_pred = torch.cat(y_pred)
-        y_true = torch.cat(y_true)
-
-        return self.__calc_metrics(y_pred, y_true, metrics_dic)
+        return metrics_rec.average()
 
 
 class Logger(object):
@@ -186,7 +188,7 @@ class Logger(object):
             self.bar = Progbar(len(kwargs['data_loader']))
             self.step_count = 0
 
-    def on_batch_end(self):
+    def on_batch_end(self, metrics_rec: MetricsRecorder):
         if self.verbose == 1:
             self.step_count += 1
             self.bar.update(self.step_count)
