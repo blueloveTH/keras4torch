@@ -93,12 +93,11 @@ class Progbar(object):
         self._total_width = len(bar)
         sys.stdout.write(bar)
 
-        time_per_unit = self._estimate_step_duration(current, now)
+        if not finalize:
+            time_per_unit = self._estimate_step_duration(current, now)
 
-        if finalize:
-            pass
-        else:
             eta = time_per_unit * (self.target - current)
+
             if eta > 3600:
                 eta_format = '%d:%02d:%02d' % (eta // 3600, (eta % 3600) // 60, eta % 60)
             elif eta > 60:
