@@ -113,6 +113,7 @@ class EarlyStopping(Callback):
 
 
 
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 class LRScheduler(Callback):
     def __init__(self, lr_scheduler) -> None:
@@ -120,7 +121,11 @@ class LRScheduler(Callback):
         self.lr_scheduler = lr_scheduler
 
     def on_epoch_end(self, trainer: Trainer):
-        self.lr_scheduler.step()
+        if isinstance(self.lr_scheduler, ReduceLROnPlateau):
+            self.lr_scheduler.step(trainer.logger.metrics['val_loss'])
+        else:
+            self.lr_scheduler.step()
+        
 
 
 

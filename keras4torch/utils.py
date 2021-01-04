@@ -27,7 +27,7 @@ def _deep_to_tensor(arg):
 
 def to_tensor(*args):
     rt = [_deep_to_tensor(arg) for arg in args]            
-    return rt[0] if len(rt) == 1 else tuple(rt)
+    return rt[0] if len(rt) == 1 else rt
 
 
 def _get_num_workers(num_workers):
@@ -43,7 +43,6 @@ class Progbar(object):
         self.width = width
         self.interval = interval
 
-        self._seen_so_far = 0
         self._start = time.time()
         self._last_update = 0
         self._total_width = 0
@@ -67,12 +66,10 @@ class Progbar(object):
         if current >= self.target and finalize == False:
             return
 
-        self._seen_so_far = current
-
         now = time.time()
-
         if now - self._last_update < self.interval and not finalize:
             return
+        self._last_update = now
 
         prev_total_width = self._total_width
         self.__reset_pos(prev_total_width)
@@ -117,8 +114,6 @@ class Progbar(object):
 
             sys.stdout.write(info)
             sys.stdout.flush()
-
-        self._last_update = now
 
     def _estimate_step_duration(self, current, now):
         if self._time_after_first_step is not None and current > 1:
