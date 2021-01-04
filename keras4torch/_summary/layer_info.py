@@ -68,19 +68,22 @@ class LayerInfo:
         elif isinstance(inputs, (list, tuple)) and hasattr(inputs[0], "data"):
             size = list(inputs[0].data.size())
             if batch_dim is not None:
-                size = size[:batch_dim] + [-1] + size[batch_dim + 1 :]
+                #size = size[:batch_dim] + [-1] + size[batch_dim + 1 :]
+                pass
 
         elif isinstance(inputs, dict):
             # TODO avoid overwriting the previous size every time?
             for _, output in inputs.items():
                 size = list(output.size())
                 if batch_dim is not None:
-                    size = [size[:batch_dim] + [-1] + size[batch_dim + 1 :]]
+                    #size = [size[:batch_dim] + [-1] + size[batch_dim + 1 :]]
+                    pass
 
         elif isinstance(inputs, torch.Tensor):
             size = list(inputs.size())
             if batch_dim is not None:
-                size[batch_dim] = -1
+                #size[batch_dim] = -1
+                pass
 
         elif isinstance(inputs, (list, tuple)):
             size = nested_list_size(inputs)

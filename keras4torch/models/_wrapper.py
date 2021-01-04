@@ -50,18 +50,24 @@ class Model(torch.nn.Module):
     ########## keras-style methods below ##########
 
     @torch.no_grad()
-    def build(self, input_shape):
+    def build(self, input_shape, dtype=torch.float32):
         """Build the model when it contains `KerasLayer`."""
-        if isinstance(input_shape[0], list) or isinstance(input_shape[0], tuple):
-            batch_shapes = [ [2]+list(i) for i in input_shape]
-            probe_inputs = [torch.zeros(size=s) for s in batch_shapes]
-        else:
-            batch_shape = [2] + list(input_shape)
-            probe_inputs = [torch.zeros(size=batch_shape)]
+        if isinstance(input_shape[0], int):
+            input_shape = [input_shape]
+
+        if not isinstance(dtype, list):
+            dtype = [dtype] * len(input_shape)
+
+        assert len(dtype) == len(input_shape)
+
+        device = self.trainer.device if self.compiled else 'cpu'
+
+        batch_shapes = [ [3]+list(i) for i in input_shape]
+        probe_inputs = [torch.zeros(size=sz).to(dtype=dt, device=device) for sz,dt in zip(batch_shapes, dtype)]
         self.model(*probe_inputs)
 
-        self.built = True
         self._probe_inputs = probe_inputs
+        self.built = True
         return self
 
     def _check_keras_layer(self):
