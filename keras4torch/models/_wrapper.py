@@ -228,7 +228,7 @@ class Model(torch.nn.Module):
     @torch.no_grad()
     def evaluate_dl(self, data_loader, use_amp=False):
         assert self.compiled
-        return dict(self.trainer.evaluate(data_loader, use_amp))
+        return dict(self.trainer.valid_on_epoch(data_loader, use_amp))
 
     @torch.no_grad()
     def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None, use_amp=False):

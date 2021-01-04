@@ -5,6 +5,7 @@ nav:
     - API References:
         - Models API: api_references/models_api.md
         - Layers API: api_references/layers_api.md
+        - Training API: api_references/training_api.md
         - Callbacks API: api_references/callbacks_api.md
         - Metrics: api_references/metrics.md
         - Losses: api_references/losses.md

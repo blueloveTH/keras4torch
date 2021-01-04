@@ -110,7 +110,7 @@ class Trainer(object):
             self.logger.on_epoch_begin(epoch, max_epochs, data_loader=train_loader)
 
             train_metrics = self.train_on_epoch(train_loader)
-            val_metrics = self.evaluate(val_loader, self.use_amp) if val_loader else OrderedDict()
+            val_metrics = self.valid_on_epoch(val_loader, self.use_amp) if val_loader else OrderedDict()
 
             self.logger.on_epoch_end(epoch, train_metrics, val_metrics)
 
@@ -142,7 +142,7 @@ class Trainer(object):
             grad_scaler.update()
 
             y_batch_pred = y_batch_pred.detach()
-            loop['metrics_update'](metrics_rec, y_batch_pred, y_batch)
+            loop['update_metrics'](metrics_rec, y_batch_pred, y_batch)
 
             ################
 
@@ -153,7 +153,7 @@ class Trainer(object):
     
 
     @torch.no_grad()
-    def evaluate(self, data_loader, use_amp):
+    def valid_on_epoch(self, data_loader, use_amp):
         self.model.eval()
         metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
 
@@ -166,7 +166,7 @@ class Trainer(object):
                 y_batch_pred, y_batch = loop['forward_call'](self.model, x_batch, y_batch)
 
             y_batch_pred = y_batch_pred.detach()
-            loop['metrics_update'](metrics_rec, y_batch_pred, y_batch)
+            loop['update_metrics'](metrics_rec, y_batch_pred, y_batch)
 
         return metrics_rec.average()
 
