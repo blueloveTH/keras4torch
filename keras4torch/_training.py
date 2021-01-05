@@ -76,8 +76,8 @@ class Trainer(object):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.batch_training_loop = create_batch_training_loop()
-        self.batch_validation_loop = create_batch_validation_loop()
+        self._batch_training_loop = create_batch_training_loop()
+        self._batch_validation_loop = create_batch_validation_loop()
     
     def register_callbacks(self, callbacks):
         self.event_dict = {Events(k).value: list() for k in Events}
@@ -127,7 +127,7 @@ class Trainer(object):
         metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
         grad_scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
 
-        loop = self.batch_training_loop
+        loop = self._batch_training_loop
 
         for batch in data_loader:
             x_batch, y_batch = loop['process_batch'](batch, device=self.device)
@@ -157,7 +157,7 @@ class Trainer(object):
         self.model.eval()
         metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
 
-        loop = self.batch_validation_loop
+        loop = self._batch_validation_loop
  
         for batch in data_loader:
             x_batch, y_batch = loop['process_batch'](batch, device=self.device)

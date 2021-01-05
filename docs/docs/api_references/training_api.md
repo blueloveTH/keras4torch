@@ -5,8 +5,7 @@ By default, the training pipeline of `keras4torch` can handle many useful cases.
 ## Get loop configs after `.compile()`
 
 ```python
-trn_loop = model.trainer.batch_training_loop
-val_loop = model.trainer.batch_validation_loop
+trn_loop, val_loop = model.trainer_loop_configs
 ```
 
 Both `trn_loop` and `val_loop` are python `dict` which contains several hooks of the training pipeline.

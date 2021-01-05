@@ -118,6 +118,10 @@ class Model(torch.nn.Module):
         self.trainer = Trainer(model=self, optimizer=optimizer, loss=loss, metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device)
         self.compiled = True
 
+    @property
+    def trainer_loop_configs(self):
+        assert self.compiled
+        return self.trainer._batch_training_loop, self.trainer._batch_validation_loop
 
     def fit_dl(self, train_loader, epochs,
                 val_loader=None,

@@ -61,7 +61,7 @@ class BatchNorm3d(KerasLayer):
 
 class Linear(KerasLayer):
     def build(self, in_shape):
-        return nn.Linear(in_shape[1], *self.args, **self.kwargs)
+        return nn.Linear(in_shape[-1], *self.args, **self.kwargs)
 
 
 class GRU(KerasLayer):
