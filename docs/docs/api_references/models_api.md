@@ -2,9 +2,9 @@
 
 `keras4torch.Model` wraps a `torch.nn.Module` to integrate training and inference features.
 
-#### Configs
+## Configs
 
-##### `.compile(optimizer, loss, metrics=None, epoch_metrics=None, device=None)`
+#### `.compile(optimizer, loss, metrics=None, ...)`
 
 Configure the model for training.
 
@@ -20,9 +20,9 @@ Configure the model for training.
 
 
 
-#### NumPy workflow
+## NumPy workflow
 
-##### `.fit(x, y, epochs, batch_size=32, ...)`
+#### `.fit(x, y, epochs, batch_size=32, ...)`
 
 Train the model for a fixed number of epochs (iterations on a dataset).
 
@@ -54,50 +54,50 @@ Train the model for a fixed number of epochs (iterations on a dataset).
 
 + `use_amp` (bool, default=False): Whether to use automatic mixed precision
 
-##### `.evaluate(x, y, batch_size=32, ...)`
+#### `.evaluate(x, y, batch_size=32, ...)`
 
 
 
-##### `.predict(x, batch_size=32, ...)`
+#### `.predict(x, batch_size=32, ...)`
 
 
 
-#### DataLoader workflow
+## DataLoader workflow
 
-##### `.fit_dl(train_loader, epochs, val_loader=None, ...)`
-
-
-
-##### `.evaluate_dl(data_loader, ...)`
+#### `.fit_dl(train_loader, epochs, val_loader=None, ...)`
 
 
 
-##### `.predict_dl(data_loader, ...)`
+#### `.evaluate_dl(data_loader, ...)`
+
+
+
+#### `.predict_dl(data_loader, ...)`
 
 
 
 
 
-#### Saving & Serialization
+## Saving & Serialization
 
-##### `.save_weights(filepath)`
+#### `.save_weights(filepath)`
 
 Equal to `torch.save(model.state_dict(), filepath)`.
 
-##### `.load_weights(filepath)`
+#### `.load_weights(filepath)`
 
 Equal to `model.load_state_dict(torch.load(filepath))`.
 
 
 
-#### Utilities
+## Utilities
 
-##### `.summary(depth=3, ...)`
+#### `.summary(depth=3, ...)`
 
 Print a string summary of the network.
 
 +   `depth` (default=3): Summary details level
 
-##### `.count_params()`
+#### `.count_params()`
 
 Count the total number of scalars composing the weights.
