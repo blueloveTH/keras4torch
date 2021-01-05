@@ -1,6 +1,6 @@
 # Losses
 
-#### CELoss
+#### `losses.CELoss()`
 
 Here we provide an alternative to `nn.CrossEntropy`, which integrates label smoothing.
 

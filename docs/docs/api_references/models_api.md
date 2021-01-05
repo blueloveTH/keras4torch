@@ -56,25 +56,39 @@ Train the model for a fixed number of epochs (iterations on a dataset).
 
 #### `.evaluate(x, y, batch_size=32, ...)`
 
+Return the loss value & metrics values for the model in test mode.
 
++ `x` (`ndarray` or `torch.Tensor` or list): Input data
++ `y` (`ndarray` or `torch.Tensor`): Target data
++ `batch_size` (int, default=32): Number of samples per batch
++ `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
++ `use_amp` (bool, default=False): Whether to use automatic mixed precision
 
 #### `.predict(x, batch_size=32, ...)`
 
+Generate output predictions for the input samples.
 
++ `x` (`ndarray` or `torch.Tensor` or list): Input data
++ `batch_size` (int, default=32): Number of samples per batch
++ `device` (default=None): Device to do inference
++ `output_numpy` (bool, default=True): If `True`, the output will move to CPU and convert to NumPy array
++ `activation` (Callable or str, default=None): Extra activation applied to the output tensor
++ `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
++ `use_amp` (bool, default=False): Whether to use automatic mixed precision
 
 ## DataLoader workflow
 
 #### `.fit_dl(train_loader, epochs, val_loader=None, ...)`
 
-
++   ...
 
 #### `.evaluate_dl(data_loader, ...)`
 
-
++   ...
 
 #### `.predict_dl(data_loader, ...)`
 
-
++   ...
 
 
 
