@@ -47,10 +47,8 @@ class Model(torch.nn.Module):
         """Return all trainable parameters of the model."""
         return filter(lambda p: p.requires_grad, self.parameters())
 
-    ########## keras-style methods below ##########
-
     @torch.no_grad()
-    def build(self, input_shape, dtype=torch.float32):
+    def build(self, input_shape, dtype=torch.float32, batch_size=8):
         """Build the model when it contains `KerasLayer`."""
         if isinstance(input_shape[0], int):
             input_shape = [input_shape]
@@ -62,7 +60,7 @@ class Model(torch.nn.Module):
 
         device = self.trainer.device if self.compiled else 'cpu'
 
-        batch_shapes = [ [3]+list(i) for i in input_shape]
+        batch_shapes = [ [batch_size]+list(i) for i in input_shape]
         probe_inputs = [torch.zeros(size=sz).to(dtype=dt, device=device) for sz,dt in zip(batch_shapes, dtype)]
         self.model(*probe_inputs)
 
