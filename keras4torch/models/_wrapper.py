@@ -252,6 +252,9 @@ class Model(torch.nn.Module):
 
         outputs = []
         for batch in data_loader:
+            if not isinstance(batch, list):
+                batch = [batch]
+                
             for i in range(len(batch)):
                 batch[i] = batch[i].to(device=device)
 
