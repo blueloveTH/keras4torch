@@ -93,13 +93,13 @@ class Trainer(object):
         for func in func_list:
             func(self)
 
-    def run(self, train_loader, val_loader, max_epochs, verbose, use_amp):
-        self.logger = Logger(self, verbose=verbose)
-
+    def run(self, train_loader, val_loader, max_epochs, verbose, use_amp, accum_grad_steps):
         self.data_loaders = train_loader, val_loader
-
-        self.use_amp = use_amp if self.device == 'cuda' else False
         self.max_epochs = max_epochs
+        self.logger = Logger(self, verbose=verbose)
+        self.use_amp = use_amp if self.device == 'cuda' else False
+        self.accum_grad_steps = accum_grad_steps
+        
         self.logger.on_train_begin(train_loader, val_loader)
         self.__fire_event(Events.ON_TRAIN_BEGIN)
 
@@ -126,27 +126,36 @@ class Trainer(object):
         self.model.train()
         metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
         grad_scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
-
         loop = self._batch_training_loop
 
+        self.optimizer.zero_grad()
+
+        batch_idx, max_batch_idx = 0, len(data_loader)
         for batch in data_loader:
             x_batch, y_batch = loop['process_batch'](batch, device=self.device)
-            self.optimizer.zero_grad()
-
+            
             with torch.cuda.amp.autocast(enabled=self.use_amp):
                 y_batch_pred, y_batch = loop['forward_call'](self.model, x_batch, y_batch)
                 loss = self.loss(y_batch_pred, y_batch)
+                loss = loss / self.accum_grad_steps
 
             grad_scaler.scale(loss).backward()
-            grad_scaler.step(self.optimizer)
-            grad_scaler.update()
+
+            # https://discuss.pytorch.org/t/pytorch-gradient-accumulation/55955
+
+            _is_accum_end = (batch_idx + 1) % self.accum_grad_steps == 0
+            _is_last_batch = (batch_idx + 1) == max_batch_idx
+
+            if _is_accum_end or _is_last_batch:
+                grad_scaler.step(self.optimizer)
+                grad_scaler.update()
+                self.optimizer.zero_grad()
 
             y_batch_pred = y_batch_pred.detach()
             loop['update_metrics'](metrics_rec, y_batch_pred, y_batch)
 
-            ################
-
             self.logger.on_batch_end(metrics_rec)
+            batch_idx += 1
 
         return metrics_rec.average()
 

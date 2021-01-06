@@ -127,11 +127,12 @@ class Model(torch.nn.Module):
                 val_loader=None,
                 callbacks=[],
                 verbose=1,
-                use_amp=False):
+                use_amp=False,
+                accum_grad_steps=1):
 
         assert self.compiled
         self.trainer.register_callbacks(callbacks)
-        history = self.trainer.run(train_loader, val_loader, max_epochs=epochs, verbose=verbose, use_amp=use_amp)
+        history = self.trainer.run(train_loader, val_loader, max_epochs=epochs, verbose=verbose, use_amp=use_amp, accum_grad_steps=accum_grad_steps)
 
         return history
 
@@ -145,7 +146,8 @@ class Model(torch.nn.Module):
                 shuffle=True,
                 sample_weight=None,
                 num_workers=0,
-                use_amp=False
+                use_amp=False,
+                accum_grad_steps=1
                 ):
         """
         Train the model for a fixed number of epochs (iterations on a dataset).
@@ -222,7 +224,7 @@ class Model(torch.nn.Module):
         train_loader = DataLoader(train_set, shuffle=shuffle, sampler=sampler, batch_size=batch_size, num_workers=num_workers)
         val_loader = DataLoader(val_set, shuffle=False, batch_size=validation_batch_size, num_workers=num_workers) if has_val else None
 
-        return self.fit_dl(train_loader, epochs, val_loader, callbacks, verbose, use_amp)
+        return self.fit_dl(train_loader, epochs, val_loader, callbacks, verbose, use_amp, accum_grad_steps)
 
     @torch.no_grad()
     def evaluate(self, x, y, batch_size=32, num_workers=0, use_amp=False):
