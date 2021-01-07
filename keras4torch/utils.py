@@ -65,12 +65,13 @@ class Progbar(object):
         else:
             sys.stdout.write('\n')
 
-    def update(self, current, avg_batch_metrics={}, finalize=False):  
-        if current >= self.target and finalize == False:
-            return
+    def update(self, current, avg_batch_metrics={}, finalize=None):
+
+        if current >= self.target and finalize == None:
+            finalize = True
 
         now = time.time()
-        if now - self._last_update < self.interval and not finalize:
+        if now - self._last_update < self.interval and not finalize and current < self.target:
             return
         self._last_update = now
 
