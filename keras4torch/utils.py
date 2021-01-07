@@ -55,6 +55,9 @@ class Progbar(object):
 
         self._time_after_first_step = None
 
+        numdigits = int(np.log10(self.target)) + 1
+        self._batch_format = '%' + str(numdigits) + 'd/%d'
+
     def __reset_pos(self, length):
         if self._dynamic_display:
             sys.stdout.write('\b' * length)
@@ -74,8 +77,7 @@ class Progbar(object):
         prev_total_width = self._total_width
         self.__reset_pos(prev_total_width)
 
-        numdigits = int(np.log10(self.target)) + 1
-        bar = ('%' + str(numdigits) + 'd/%d') % (current, self.target)
+        bar = self._batch_format % (current, self.target)
 
         if finalize:
             sys.stdout.write(bar)
