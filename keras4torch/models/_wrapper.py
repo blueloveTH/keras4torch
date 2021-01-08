@@ -261,7 +261,7 @@ class Model(torch.nn.Module):
             with torch.cuda.amp.autocast(enabled=use_amp):
                 outputs.append(self(*batch))
 
-        outputs = torch.cat(outputs, dim=0)
+        outputs = torch.cat(outputs, dim=0).float()
 
         activation = _create_activation(activation)
         if activation != None:

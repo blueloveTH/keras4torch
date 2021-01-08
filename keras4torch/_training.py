@@ -151,7 +151,8 @@ class Trainer(object):
                 grad_scaler.update()
                 self.optimizer.zero_grad()
 
-            y_batch_pred = y_batch_pred.detach()
+            y_batch_pred = y_batch_pred.detach().float()
+
             loop['update_metrics'](metrics_rec, y_batch_pred, y_batch)
 
             self.logger.on_batch_end(metrics_rec)
@@ -174,7 +175,8 @@ class Trainer(object):
             with torch.cuda.amp.autocast(enabled=use_amp):
                 y_batch_pred, y_batch = loop['forward_call'](self.model, x_batch, y_batch)
 
-            y_batch_pred = y_batch_pred.detach()
+            y_batch_pred = y_batch_pred.detach().float()
+            
             loop['update_metrics'](metrics_rec, y_batch_pred, y_batch)
 
         return metrics_rec.average()
