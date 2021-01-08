@@ -5,7 +5,7 @@ from collections import OrderedDict
 import pandas as pd
 import numpy as np
 
-__version__ = '1.0.0m'
+__version__ = '1.0.0-mini'
 
 def to_tensor(*args):
     rt = []
@@ -133,7 +133,7 @@ class Model(torch.nn.Module):
 
         * `validation_data` (tuple of `x` and `y`): Data on which to evaluate the loss and any model metrics at the end of each epoch
         
-        * `verbose` (int, default=1): 0, 1, or 2. Verbosity mode. 0 = silent, 1 = normal, 2 = compat
+        * `verbose` (int, default=1): 0, 1, or 2. Verbosity mode. 0 = disabled, 1 = enabled
 
         * `shuffle` (bool, default=True): Whether to shuffle the training data before each epoch
         """
@@ -289,5 +289,3 @@ class Logger(object):
 
         if self.verbose == 1:
             print(' - '.join(content))
-        elif self.verbose == 2:
-            print('|'.join(content).replace(' ', '').replace('Epoch', ''))
