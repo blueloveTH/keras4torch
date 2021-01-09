@@ -63,6 +63,10 @@ class Linear(KerasLayer):
     def build(self, in_shape):
         return nn.Linear(in_shape[-1], *self.args, **self.kwargs)
 
+class LayerNorm(KerasLayer):
+    def build(self, in_shape):
+        return nn.LayerNorm(in_shape.shape[-1], *self.args, **self.kwargs)
+
 
 class GRU(KerasLayer):
     def __init__(self, *args, return_sequences=True, batch_first=True, **kwargs):

@@ -27,32 +27,20 @@ Configure the model for training.
 Train the model for a fixed number of epochs (iterations on a dataset).
 
 + `x` (`ndarray` or `torch.Tensor` or list): Input data
-
 + `y` (`ndarray` or `torch.Tensor`): Target data
-
 + `epochs` (int): Number of epochs to train the model
-
 + `batch_size` (int, default=32): Number of samples per gradient update
-
 + `validation_batch_size` (int, default=None): Number of samples for each step on validation loop, if `None` will use `batch_size`
-
 + `validation_split` (float between 0 and 1): Fraction of the training data to be used as validation data
-
 + `shuffle_val_split` (bool, default=True): Whether to do shuffling when `validation_split` is provided
-
 + `validation_data` (tuple of `x` and `y`): Data on which to evaluate the loss and any model metrics at the end of each epoch
-  
 + `callbacks` (list of `keras4torch.callbacks.Callback`): List of callbacks to apply during training
-
 + `verbose` (int, default=1): 0, 1, or 2. Verbosity mode. 0 = silent, 1 = normal, 2 = brief
-
 + `shuffle` (bool, default=True): Whether to shuffle the training data before each epoch
-
 + `sample_weight` (list of floats): Optional weights for the training samples. If provided will enable `WeightedRandomSampler`
-  
 + `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
-
 + `use_amp` (bool, default=False): Whether to use automatic mixed precision
++ `accum_grad_steps` (int, default=1): How many steps to update the model parameters
 
 #### `.evaluate(x, y, batch_size=32, ...)`
 
@@ -80,15 +68,9 @@ Generate output predictions for the input samples.
 
 #### `.fit_dl(train_loader, epochs, val_loader=None, ...)`
 
-+   ...
-
 #### `.evaluate_dl(data_loader, ...)`
 
-+   ...
-
 #### `.predict_dl(data_loader, ...)`
-
-+   ...
 
 
 
@@ -115,3 +97,7 @@ Print a string summary of the network.
 #### `.count_params()`
 
 Count the total number of scalars composing the weights.
+
+#### `.trainable_params()`
+
+Return all trainable parameters of the model.

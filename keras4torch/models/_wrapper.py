@@ -181,6 +181,8 @@ class Model(torch.nn.Module):
         * `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
 
         * `use_amp` (bool, default=False): Whether to use automatic mixed precision
+
+        * `accum_grad_steps` (int, default=1): How many steps to update the model parameters
         """
 
         assert self.compiled
