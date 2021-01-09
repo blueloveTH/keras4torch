@@ -65,7 +65,7 @@ class Linear(KerasLayer):
 
 class LayerNorm(KerasLayer):
     def build(self, in_shape):
-        return nn.LayerNorm(in_shape.shape[-1], *self.args, **self.kwargs)
+        return nn.LayerNorm(in_shape[-1], *self.args, **self.kwargs)
 
 
 class GRU(KerasLayer):
