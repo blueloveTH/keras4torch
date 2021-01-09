@@ -85,7 +85,7 @@ class Model(torch.nn.Module):
         
         summary(self.model, self._probe_inputs, depth=depth, verbose=1, device=device)
 
-    def compile(self, optimizer, loss, metrics=None, epoch_metrics=None, device=None):
+    def compile(self, optimizer, loss, metrics=None, epoch_metrics=None, device=None, loop_config=None):
         """
         Configure the model for training.
 
@@ -101,6 +101,8 @@ class Model(torch.nn.Module):
         * `epoch_metrics`: List of non-linear metrics(e.g. ROC_AUC) that need to be evaluated on epoch end.
 
         * `device`: Device of the model and its trainer, if `None` 'cuda' will be used when `torch.cuda.is_available()` otherwise 'cpu'.
+        
+        * `loop_config`: Optional `TrainerLoopConfig` object to customize training and validation loop
         """
         self._check_keras_layer()
         if device == None:
@@ -115,7 +117,7 @@ class Model(torch.nn.Module):
         epoch_metrics = _to_metrics_dic(epoch_metrics)
 
         self.to(device=device)
-        self.trainer = Trainer(model=self, optimizer=optimizer, loss=loss, metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device)
+        self.trainer = Trainer(model=self, optimizer=optimizer, loss=loss, metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device, loop_config=loop_config)
         self.compiled = True
 
     @property

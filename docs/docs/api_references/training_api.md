@@ -1,14 +1,30 @@
-# Training API
+# Training API (Beta)
 
 By default, the training pipeline of `keras4torch` can handle many useful cases. While in specific situation, you may want to customize it. To this end, we provide some hooks.
 
-## Get loop configs after `.compile()`
+You need to subclass `k4t.configs.TrainerLoopConfig` and overwrite one or several hook methods.
+
+Then pass a instance to `Model.compile(..., loop_config=None)`
 
 ```python
-trn_loop, val_loop = model.trainer_loop_configs
+class TrainerLoopConfig(object):
+    def __init__(self) -> None:
+        super().__init__()
+        self.train = None
+
+    def process_batch(self, batch, device):
+        for i in range(len(batch)):
+            batch[i] = batch[i].to(device=device)
+        return batch[:-1], batch[-1]
+
+    def forward_call(self, model, x_batch, y_batch):
+        y_batch_pred = model(*x_batch)
+        return y_batch_pred, y_batch
+
+    def prepare_for_optimizer_step(self, model):
+        pass
+
+    def prepare_for_metrics_update(self, y_batch_pred, y_batch):
+        return y_batch_pred, y_batch
 ```
-
-Both `trn_loop` and `val_loop` are python `dict` which contains several hooks of the training pipeline.
-
-Set values of them before fitting or evaluating the model.
 

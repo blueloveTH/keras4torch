@@ -1,5 +1,6 @@
 from .models import Model
 from . import layers, metrics, models, losses, activations, utils, callbacks, optimizers
 from . import hub
+from . import configs
 
-__version__ = '1.0.8'
+__version__ = '1.0.9a1'

@@ -9,14 +9,11 @@
 Configure the model for training.
 
 + `optimizer`: String (name of optimizer) or optimizer instance.
-
-+  `loss`: String (name of objective function), objective function or loss instance.
-
++ `loss`: String (name of objective function), objective function or loss instance.
 + `metrics`: List of metrics to be evaluated by the model during training. You can also use dict to specify the abbreviation of each metric.
-
 + `epoch_metrics`: List of non-linear metrics(e.g. ROC_AUC) that need to be evaluated on epoch end.
-
 + `device`: Device of the model and its trainer, if `None` 'cuda' will be used when `torch.cuda.is_available()` otherwise 'cpu'.
++ `loop_config`: Optional `TrainerLoopConfig` object to customize training and validation loop. See Training API for details.
 
 
 
