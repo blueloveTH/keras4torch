@@ -68,7 +68,7 @@ The **NumPy workflow** is compatible with Keras.
 And **DataLoader workflow** is more flexible and of pytorch style.
 
 +   `.compile(optimizer, loss, metrics)` same as NumPy workflow
-+   `.fit_dl(train_loader, epochs, val_loader)` for training the model via `DataLoader`
++   `.fit_dl(train_loader, val_loader, epochs)` for training the model via `DataLoader`
 +   `.evaluate_dl(data_loader)` same as NumPy workflow but takes `DataLoader`
 +   `.predict_dl(data_loader)` same as NumPy workflow but takes `DataLoader`
 
