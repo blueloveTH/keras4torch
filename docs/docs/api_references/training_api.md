@@ -4,7 +4,7 @@ By default, the training pipeline of `keras4torch` can handle many useful cases.
 
 You need to subclass `k4t.configs.TrainerLoopConfig` and overwrite one or several hook methods.
 
-Then pass a instance to `Model.compile(..., loop_config=None)`
+Then pass a instance to `Model.compile(..., loop_config)`
 
 ```python
 class TrainerLoopConfig(object):

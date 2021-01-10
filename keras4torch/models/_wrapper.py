@@ -2,6 +2,8 @@ import torch
 import numpy as np
 from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler, Subset
 from collections import OrderedDict
+
+from torch.utils.data.dataset import Dataset
 from .._summary import summary
 
 from .._training import Trainer
@@ -70,9 +72,7 @@ class Model(torch.nn.Module):
 
     def _check_keras_layer(self):
         if self._has_keras_layer and not self.built:
-            raise AssertionError(
-                "You need to build the model via `.build()` before this operation. Because it contains `KerasLayer`."
-                )
+            raise AssertionError("You need to build the model via `.build()` before this operation. Because it contains `KerasLayer`.")
 
     def summary(self, depth=3, device=None):
         """Print a string summary of the network."""
@@ -120,13 +120,9 @@ class Model(torch.nn.Module):
         self.trainer = Trainer(model=self, optimizer=optimizer, loss=loss, metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device, loop_config=loop_config)
         self.compiled = True
 
-    @property
-    def trainer_loop_configs(self):
-        assert self.compiled
-        return self.trainer._batch_training_loop, self.trainer._batch_validation_loop
 
-    def fit_dl(self, train_loader, epochs,
-                val_loader=None,
+    def fit_dl(self, train_loader, val_loader=None,
+                epochs=10,
                 callbacks=[],
                 verbose=1,
                 use_amp=False,
@@ -139,7 +135,7 @@ class Model(torch.nn.Module):
         return history
 
 
-    def fit(self, x, y, epochs, batch_size=32,
+    def fit(self, x, y=None, epochs=10, batch_size=32,
                 validation_batch_size=None,
                 validation_split=None, shuffle_val_split=True,
                 validation_data=None,
@@ -156,11 +152,11 @@ class Model(torch.nn.Module):
 
         Args:
 
-        * `x` (`ndarray` or `torch.Tensor` or list): Input data
+        * `x` (`ndarray` or `torch.Tensor` or `Dataset`): Input data
 
         * `y` (`ndarray` or `torch.Tensor`): Target data
 
-        * `epochs` (int): Number of epochs to train the model
+        * `epochs` (int, default=10): Number of epochs to train the model
 
         * `batch_size` (int, default=32): Number of samples per gradient update
 
@@ -188,20 +184,29 @@ class Model(torch.nn.Module):
         """
 
         assert self.compiled
-        if not isinstance(x, list) and not isinstance(x, tuple):
-            x = [x]
-        x, y = to_tensor(x, y)
-
         assert not (validation_data != None and validation_split != None)
         has_val = validation_data != None or validation_split != None
+
+        if isinstance(x, Dataset):
+            train_set = x
+        else:
+            if not isinstance(x, list) and not isinstance(x, tuple):
+                x = [x]
+            x, y = to_tensor(x, y)
+            train_set = TensorDataset(*x, y)
         
-        train_set = TensorDataset(*x, y)
+        del x, y    # for preventing bugs
 
         if validation_data != None:
-            x_val, y_val = to_tensor(validation_data[0], validation_data[1])
-            if not isinstance(x_val, list) and not isinstance(x_val, tuple):
-                x_val = [x_val]
-            val_set = TensorDataset(*x_val, y_val)
+            if isinstance(validation_data, Dataset):
+                val_set = validation_data
+            else:
+                x_val, y_val = to_tensor(validation_data[0], validation_data[1])
+                if not isinstance(x_val, list) and not isinstance(x_val, tuple):
+                    x_val = [x_val]
+                val_set = TensorDataset(*x_val, y_val)
+
+        del validation_data     # for preventing bugs
 
         if validation_split != None:
             val_length = int(len(train_set) * validation_split)
@@ -211,10 +216,10 @@ class Model(torch.nn.Module):
                 np.random.shuffle(idx)
             train_set, val_set = Subset(train_set, idx[:-val_length]), Subset(train_set, idx[-val_length:])
             if sample_weight is not None:
-                assert len(sample_weight) == len(y)
                 sample_weight = [sample_weight[i] for i in idx[:-val_length]]
 
         if sample_weight is not None:
+            assert len(sample_weight) == len(train_set)
             sampler = WeightedRandomSampler(sample_weight, len(sample_weight))
             shuffle = None
         else:
@@ -228,15 +233,19 @@ class Model(torch.nn.Module):
         train_loader = DataLoader(train_set, shuffle=shuffle, sampler=sampler, batch_size=batch_size, num_workers=num_workers)
         val_loader = DataLoader(val_set, shuffle=False, batch_size=validation_batch_size, num_workers=num_workers) if has_val else None
 
-        return self.fit_dl(train_loader, epochs, val_loader, callbacks, verbose, use_amp, accum_grad_steps)
+        return self.fit_dl(train_loader, val_loader, epochs, callbacks, verbose, use_amp, accum_grad_steps)
 
     @torch.no_grad()
-    def evaluate(self, x, y, batch_size=32, num_workers=0, use_amp=False):
+    def evaluate(self, x, y=None, batch_size=32, num_workers=0, use_amp=False):
         """Return the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
-        if not isinstance(x, list) and not isinstance(x, tuple):
-            x = [x]
-        x, y = to_tensor(x, y)
-        val_loader = DataLoader(TensorDataset(*x, y), batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
+        if isinstance(x, Dataset):
+            val_set = x
+        else:
+            if not isinstance(x, list) and not isinstance(x, tuple):
+                x = [x]
+            x, y = to_tensor(x, y)
+            val_set = TensorDataset(*x, y)
+        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
         return self.evaluate_dl(val_loader, use_amp)
 
     @torch.no_grad()
@@ -276,9 +285,13 @@ class Model(torch.nn.Module):
     @torch.no_grad()
     def predict(self, x, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0, use_amp=False):
         """Generate output predictions for the input samples.\n\n    Computation is done in batches."""
-        if not isinstance(x, list) and not isinstance(x, tuple):
-            x = [x]
-        data_loader = DataLoader(TensorDataset(*to_tensor(x)), batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
+        if isinstance(x, Dataset):
+            test_set = x
+        else:
+            if not isinstance(x, list) and not isinstance(x, tuple):
+                x = [x]
+            test_set = TensorDataset(*to_tensor(x))
+        data_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
         return self.predict_dl(data_loader, device=device, output_numpy=output_numpy, activation=activation, use_amp=use_amp)
 
     def save_weights(self, filepath):

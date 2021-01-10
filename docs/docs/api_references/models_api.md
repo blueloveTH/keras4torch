@@ -4,7 +4,7 @@
 
 ## Configs
 
-#### `.compile(optimizer, loss, metrics=None, ...)`
+#### `.compile(optimizer, loss, metrics, ...)`
 
 Configure the model for training.
 
@@ -19,13 +19,13 @@ Configure the model for training.
 
 ## NumPy workflow
 
-#### `.fit(x, y, epochs, batch_size=32, ...)`
+#### `.fit(x, y, epochs, batch_size, ...)`
 
 Train the model for a fixed number of epochs (iterations on a dataset).
 
-+ `x` (`ndarray` or `torch.Tensor` or list): Input data
++ `x` (`ndarray` or `torch.Tensor` or `Dataset`): Input data
 + `y` (`ndarray` or `torch.Tensor`): Target data
-+ `epochs` (int): Number of epochs to train the model
++ `epochs` (int, default=10): Number of epochs to train the model
 + `batch_size` (int, default=32): Number of samples per gradient update
 + `validation_batch_size` (int, default=None): Number of samples for each step on validation loop, if `None` will use `batch_size`
 + `validation_split` (float between 0 and 1): Fraction of the training data to be used as validation data
@@ -39,21 +39,21 @@ Train the model for a fixed number of epochs (iterations on a dataset).
 + `use_amp` (bool, default=False): Whether to use automatic mixed precision
 + `accum_grad_steps` (int, default=1): How many steps to update the model parameters
 
-#### `.evaluate(x, y, batch_size=32, ...)`
+#### `.evaluate(x, y, batch_size, ...)`
 
 Return the loss value & metrics values for the model in test mode.
 
-+ `x` (`ndarray` or `torch.Tensor` or list): Input data
++ `x` (`ndarray` or `torch.Tensor` or `Dataset`): Input data
 + `y` (`ndarray` or `torch.Tensor`): Target data
 + `batch_size` (int, default=32): Number of samples per batch
 + `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
 + `use_amp` (bool, default=False): Whether to use automatic mixed precision
 
-#### `.predict(x, batch_size=32, ...)`
+#### `.predict(x, batch_size, ...)`
 
 Generate output predictions for the input samples.
 
-+ `x` (`ndarray` or `torch.Tensor` or list): Input data
++ `x` (`ndarray` or `torch.Tensor` or `Dataset`): Input data
 + `batch_size` (int, default=32): Number of samples per batch
 + `device` (default=None): Device to do inference
 + `output_numpy` (bool, default=True): If `True`, the output will move to CPU and convert to NumPy array
@@ -63,7 +63,7 @@ Generate output predictions for the input samples.
 
 ## DataLoader workflow
 
-#### `.fit_dl(train_loader, epochs, val_loader=None, ...)`
+#### `.fit_dl(train_loader, val_loader, epochs, ...)`
 
 #### `.evaluate_dl(data_loader, ...)`
 
@@ -85,7 +85,7 @@ Equal to `model.load_state_dict(torch.load(filepath))`.
 
 ## Utilities
 
-#### `.summary(depth=3, ...)`
+#### `.summary(depth, ...)`
 
 Print a string summary of the network.
 
