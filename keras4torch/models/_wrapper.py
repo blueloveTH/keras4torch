@@ -263,6 +263,8 @@ class Model(torch.nn.Module):
                 device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.eval().to(device=device)
 
+        activation = _create_activation(activation)
+
         outputs = []
         for batch in data_loader:
             if not isinstance(batch, list):
@@ -272,11 +274,11 @@ class Model(torch.nn.Module):
                 batch[i] = batch[i].to(device=device)
 
             with torch.cuda.amp.autocast(enabled=use_amp):
-                outputs.append(self(*batch))
+                o = self(*batch)
+                outputs.append(o)
 
         outputs = torch.cat(outputs, dim=0).float()
 
-        activation = _create_activation(activation)
         if activation != None:
             outputs = activation(outputs)
 

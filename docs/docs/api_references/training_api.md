@@ -12,14 +12,11 @@ class TrainerLoopConfig(object):
         super().__init__()
         self.train = None
 
-    def process_batch(self, batch, device):
-        for i in range(len(batch)):
-            batch[i] = batch[i].to(device=device)
-        return batch[:-1], batch[-1]
+    def process_batch(self, x_batch, y_batch):
+        return x_batch, y_batch
 
-    def forward_call(self, model, x_batch, y_batch):
-        y_batch_pred = model(*x_batch)
-        return y_batch_pred, y_batch
+    def forward_call(self, model, x_batch):
+        return model(*x_batch)
 
     def prepare_for_optimizer_step(self, model):
         pass

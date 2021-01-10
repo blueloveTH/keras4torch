@@ -48,9 +48,11 @@ class MetricsRecorder():
             self.y_true.append(y_batch.cpu())
 
     def __update_batch_metrics(self, y_batch_pred, y_batch):
-        batch_metrics = calc_metrics(y_batch_pred, y_batch, self.metrics)
         count = len(y_batch)
-
+        if count == 0:
+            return
+        batch_metrics = calc_metrics(y_batch_pred, y_batch, self.metrics)
+        
         for key, value in batch_metrics.items():
             self.accum_metrics[key] += value * count
         self.total_count += count
@@ -139,10 +141,11 @@ class Trainer(object):
 
         batch_idx, max_batch_idx = 0, len(data_loader)
         for batch in data_loader:
-            x_batch, y_batch = loop.process_batch(batch, device=self.device)
+            *x_batch, y_batch = [i.to(device=self.device) for i in batch]
+            x_batch, y_batch = loop.process_batch(x_batch, y_batch)
             
             with torch.cuda.amp.autocast(enabled=self.use_amp):
-                y_batch_pred, y_batch = loop.forward_call(self.model, x_batch, y_batch)
+                y_batch_pred = loop.forward_call(self.model, x_batch)
                 loss = self.loss(y_batch_pred, y_batch)
                 loss = loss / self.accum_grad_steps
 
@@ -160,9 +163,9 @@ class Trainer(object):
                 self.optimizer.zero_grad()
 
             y_batch_pred = y_batch_pred.detach().float()
-
-            y_batch_pred, y_batch = loop.prepare_for_metrics_update(y_batch_pred, y_batch)
-            metrics_rec.update(y_batch_pred, y_batch)
+            metrics_rec.update(
+                *loop.prepare_for_metrics_update(y_batch_pred, y_batch)
+            )
 
             self.logger.on_batch_end(metrics_rec)
             batch_idx += 1
@@ -179,15 +182,16 @@ class Trainer(object):
         loop = self.get_loop_config(train=False)
  
         for batch in data_loader:
-            x_batch, y_batch = loop.process_batch(batch, device=self.device)
+            *x_batch, y_batch = [i.to(device=self.device) for i in batch]
+            x_batch, y_batch = loop.process_batch(x_batch, y_batch)
 
             with torch.cuda.amp.autocast(enabled=use_amp):
-                y_batch_pred, y_batch = loop.forward_call(self.model, x_batch, y_batch)
+                y_batch_pred = loop.forward_call(self.model, x_batch)
 
             y_batch_pred = y_batch_pred.detach().float()
-            
-            y_batch_pred, y_batch = loop.prepare_for_metrics_update(y_batch_pred, y_batch)
-            metrics_rec.update(y_batch_pred, y_batch)
+            metrics_rec.update(
+                *loop.prepare_for_metrics_update(y_batch_pred, y_batch)
+            )
 
         return metrics_rec.average()
 
