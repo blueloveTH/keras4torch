@@ -26,7 +26,13 @@
 +   Reduce the cost for migrating Keras model implementation to PyTorch
 +   Enable Keras users to test PyTorch model via their familar pipeline
 
+---
 
+<p align="center">
+    <h4 align="center">Use <code>keras4torch</code> for kaggle code competition! Check this <a href="https://www.kaggle.com/blueloveth/keras4torch">offline dataset</a> and <a href="https://www.kaggle.com/blueloveth/keras4torch-starter">starter notebook.</a></h4>
+</p>
+
+---
 
 ## Installation
 
