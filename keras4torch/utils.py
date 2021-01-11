@@ -20,7 +20,7 @@ def _to_tensor_leaf(arg):
     return arg
 
 def _deep_to_tensor(arg):
-    if isinstance(arg, list) or isinstance(arg, tuple):
+    if isinstance(arg, (list, tuple)):
         return type(arg)([_deep_to_tensor(a) for a in arg])
     else:
         return _to_tensor_leaf(arg)
