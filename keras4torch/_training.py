@@ -84,7 +84,7 @@ class Trainer(object):
             self.loop_config = _default_trainer_loop_config
     
     def register_callbacks(self, callbacks):
-        self.event_dict = {Events(k).value: list() for k in Events}
+        self.event_dict = {Events(k).value: [] for k in Events}
 
         if not isinstance(callbacks, list):
             callbacks = [callbacks]
