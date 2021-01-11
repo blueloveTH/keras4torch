@@ -1,15 +1,13 @@
 from collections import OrderedDict
 import torch
 import torch.nn.functional as F
-from abc import abstractclassmethod
 
 class Metric():
     def __init__(self) -> None:
         pass
 
-    @abstractclassmethod
     def get_abbr(self) -> str:
-        pass
+        raise NotImplementedError()
 
 class Accuracy(Metric):
 
@@ -48,9 +46,8 @@ class SklearnMetric(Metric):
         y_pred = y_pred.cpu().numpy()
         return torch.tensor(self.score_fn(y_true, y_pred), dtype=torch.float32, device=_device)
 
-    @abstractclassmethod
     def get_score_fn(self, sklearn_metrics):
-        pass
+        raise NotImplementedError()
 
 
 class ROC_AUC(SklearnMetric):
