@@ -234,10 +234,13 @@ class Logger(object):
         self.metrics.update({('val_' + k): v for k, v in val_metrics.items()})
  
         for k, v in self.metrics.items():
-            content.append('{}: {:.4f}'.format(k, v)) 
+            if v > 1e-3:
+                content.append('{}: {:.4f}'.format(k, v))
+            else:
+                content.append('{}: {:.4e}'.format(k, v))
 
         self.metrics['lr'] = self.trainer.optimizer.param_groups[0]['lr']
-        content.append('lr: {:.0e}'.format(self.metrics['lr']))
+        content.append('lr: {:.1e}'.format(self.metrics['lr']).replace('.0e', 'e'))
 
         if not hasattr(self, 'history'):
             self.history = pd.DataFrame(columns=list(self.metrics.keys()))
