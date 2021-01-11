@@ -77,7 +77,6 @@ class F1_Score(SklearnMetric):
 # For Regression
 
 class MeanSquaredError(Metric):
-
     def __call__(self, y_pred, y_true):
         return F.mse_loss(y_pred, y_true)
 
@@ -85,7 +84,6 @@ class MeanSquaredError(Metric):
         return 'mse'
 
 class MeanAbsoluteError(Metric):
-
     def __call__(self, y_pred, y_true):
         return F.l1_loss(y_pred, y_true)
 
@@ -93,7 +91,6 @@ class MeanAbsoluteError(Metric):
         return 'mae'
 
 class RootMeanSquaredError(Metric):
-
     def __call__(self, y_pred, y_true):
         return torch.sqrt(F.mse_loss(y_pred, y_true))
 
