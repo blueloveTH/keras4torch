@@ -67,7 +67,7 @@ class Model(torch.nn.Module):
         if isinstance(metrics, dict):
             m.update(metrics)
         elif isinstance(metrics, list):
-            m.update({tmp_m.__name__: tmp_m for tmp_m in metrics if hasattr(tmp_m, '__call__')})
+            m.update({tmp_m.__name__: tmp_m for tmp_m in metrics if callable(tmp_m)})
         elif not (metrics is None):
             raise TypeError('Argument `metrics` should be either a dict or list.')
 
