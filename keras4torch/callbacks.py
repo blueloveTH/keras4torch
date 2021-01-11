@@ -38,8 +38,7 @@ class ModelCheckpoint(Callback):
     def is_better(self, curr_score):
         if self.mode == 'max':
             return curr_score > self.best_score
-        else:   # mode == 'min'
-            return curr_score < self.best_score
+        return curr_score < self.best_score
 
     def on_epoch_end(self, trainer: Trainer):
         filename = self.filepath.format(epoch=trainer.epoch, **trainer.logger.metrics)
@@ -76,10 +75,9 @@ class EarlyStopping(Callback):
     def is_better(self, curr_score):
         if self.mode == 'max':
             return curr_score - self.best_score > self.min_delta
-        else:   # mode == 'min'
-            if self.baseline is not None and curr_score > self.baseline:
-                return False
-            return self.best_score - curr_score > self.min_delta
+        if self.baseline is not None and curr_score > self.baseline:
+            return False
+        return self.best_score - curr_score > self.min_delta
 
     def is_surpass_baseline(self, curr_score):
         if self.baseline is None or self.baseline_flag:

@@ -16,8 +16,7 @@ class Accuracy(Metric):
     def __call__(self, y_pred, y_true):
         if y_pred.shape[-1] == 1 or y_pred.dim() == 1:
             return binary_accuracy(y_pred, y_true)
-        else:
-            return categorical_accuracy(y_pred, y_true)
+        return categorical_accuracy(y_pred, y_true)
 
     def get_abbr(self) -> str:
         return 'acc'
@@ -120,8 +119,7 @@ def _create_metric(i):
         if name not in _metrics_dict:
             raise KeyError(f'Invalid name, we support {list(_metrics_dict.keys())}.')
         return _metrics_dict[name]()
-    else:
-        return i
+    return i
 
 
 def _to_metrics_dic(metrics):

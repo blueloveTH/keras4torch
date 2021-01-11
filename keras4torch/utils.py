@@ -22,8 +22,7 @@ def _to_tensor_leaf(arg):
 def _deep_to_tensor(arg):
     if isinstance(arg, (list, tuple)):
         return type(arg)([_deep_to_tensor(a) for a in arg])
-    else:
-        return _to_tensor_leaf(arg)
+    return _to_tensor_leaf(arg)
 
 def to_tensor(*args):
     rt = [_deep_to_tensor(arg) for arg in args]            

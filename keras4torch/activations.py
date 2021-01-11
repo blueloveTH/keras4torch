@@ -58,7 +58,6 @@ def _create_activation(i):
         if name not in _activations_dict:
             raise KeyError(f'Invalid name, we support {list(_activations_dict.keys())}.')
         return deepcopy(_activations_dict[name])
-    else:
-        return i
+    return i
 
 __all__ = ['Mish', 'Swish']
