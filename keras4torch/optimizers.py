@@ -14,7 +14,6 @@ def _create_optimizer(i, model_parameters):
             raise KeyError(f'Invalid name, we support {list(_optimizers_dict.keys())}.')
         optim_class, kwargs = _optimizers_dict[name]
         return optim_class(model_parameters, **kwargs)
-    else:
-        return i
+    return i
 
 __all__ = []
