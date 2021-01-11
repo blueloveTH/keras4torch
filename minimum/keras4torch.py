@@ -60,7 +60,7 @@ class Model(torch.nn.Module):
 
         * `device`: Device of the model and its trainer, if `None` 'cuda' will be used when `torch.cuda.is_available()` otherwise 'cpu'.
         """
-        if device == None:
+        if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         m = OrderedDict({'loss': loss})
@@ -91,7 +91,7 @@ class Model(torch.nn.Module):
 
     @torch.no_grad()
     def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None):
-        if device == None:
+        if device is None:
             if self.compiled:
                 device = self.trainer.device
             else:
@@ -101,7 +101,7 @@ class Model(torch.nn.Module):
         outputs = [self(x_batch[0].to(device=device)) for x_batch in data_loader]
         outputs = torch.cat(outputs, dim=0)
 
-        if activation != None:
+        if activation is not None:
             outputs = activation(outputs)
 
         return outputs.cpu().numpy() if output_numpy else outputs
@@ -141,16 +141,16 @@ class Model(torch.nn.Module):
         assert self.compiled
         x, y = to_tensor(x, y)
 
-        assert not (validation_data != None and validation_split != None)
-        has_val = validation_data != None or validation_split != None
+        assert not (validation_data is not None and validation_split is not None)
+        has_val = validation_data is not None or validation_split is not None
         
         train_set = TensorDataset(x, y)
 
-        if validation_data != None:
+        if validation_data is not None:
             x_val, y_val = to_tensor(validation_data[0], validation_data[1])
             val_set = TensorDataset(x_val, y_val)
 
-        if validation_split != None:
+        if validation_split is not None:
             val_length = int(len(train_set) * validation_split)
             idx = np.arange(0, len(train_set))
             if shuffle_val_split:
@@ -253,7 +253,7 @@ class Logger(object):
         self.verbose = verbose
         if self.verbose == 0:
             return None
-        if val_loader != None:
+        if val_loader is not None:
             print(f'Train on {len(train_loader.dataset)} samples, validate on {len(val_loader.dataset)} samples:')
         else:
             print(f'Train on {len(train_loader.dataset)} samples:')

@@ -77,12 +77,12 @@ class EarlyStopping(Callback):
         if self.mode == 'max':
             return curr_score - self.best_score > self.min_delta
         else:   # mode == 'min'
-            if self.baseline != None and curr_score > self.baseline:
+            if self.baseline is not None and curr_score > self.baseline:
                 return False
             return self.best_score - curr_score > self.min_delta
 
     def is_surpass_baseline(self, curr_score):
-        if self.baseline == None or self.baseline_flag:
+        if self.baseline is None or self.baseline_flag:
             return True
         if self.mode == 'max' and curr_score > self.baseline:
             self.baseline_flag = True

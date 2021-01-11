@@ -67,7 +67,7 @@ class Progbar(object):
 
     def update(self, current, avg_batch_metrics={}, finalize=None):
 
-        if current >= self.target and finalize == None:
+        if current >= self.target and finalize is None:
             finalize = True
 
         now = time.time()

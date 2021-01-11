@@ -45,7 +45,7 @@ class SklearnMetric(Metric):
 
     def __call__(self, y_pred, y_true):
         _device = y_pred.device
-        if self.activation != None:
+        if self.activation is not None:
             y_pred = self.activation(y_pred)
         y_true = y_true.cpu().numpy()
         y_pred = y_pred.cpu().numpy()

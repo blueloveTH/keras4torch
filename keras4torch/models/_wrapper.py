@@ -105,7 +105,7 @@ class Model(torch.nn.Module):
         * `loop_config`: Optional `TrainerLoopConfig` object to customize training and validation loop
         """
         self._check_keras_layer()
-        if device == None:
+        if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
             
         loss = _create_loss(loss)
@@ -184,8 +184,8 @@ class Model(torch.nn.Module):
         """
 
         assert self.compiled
-        assert not (validation_data != None and validation_split != None)
-        has_val = validation_data != None or validation_split != None
+        assert not (validation_data is not None and validation_split is not None)
+        has_val = validation_data is not None or validation_split is not None
 
         if isinstance(x, Dataset):
             train_set = x
@@ -197,7 +197,7 @@ class Model(torch.nn.Module):
         
         del x, y    # for preventing bugs
 
-        if validation_data != None:
+        if validation_data is not None:
             if isinstance(validation_data, Dataset):
                 val_set = validation_data
             else:
@@ -208,7 +208,7 @@ class Model(torch.nn.Module):
 
         del validation_data     # for preventing bugs
 
-        if validation_split != None:
+        if validation_split is not None:
             val_length = int(len(train_set) * validation_split)
             idx = np.arange(0, len(train_set))
             if shuffle_val_split:
@@ -256,7 +256,7 @@ class Model(torch.nn.Module):
     @torch.no_grad()
     def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None, use_amp=False):
         self._check_keras_layer()
-        if device == None:
+        if device is None:
             if self.compiled:
                 device = self.trainer.device
             else:
@@ -279,7 +279,7 @@ class Model(torch.nn.Module):
 
         outputs = torch.cat(outputs, dim=0).float()
 
-        if activation != None:
+        if activation is not None:
             outputs = activation(outputs)
 
         return outputs.cpu().numpy() if output_numpy else outputs
