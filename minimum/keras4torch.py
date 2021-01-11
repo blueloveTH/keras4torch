@@ -263,7 +263,7 @@ class Logger(object):
 
     def on_epoch_end(self, **kwargs):
         if not hasattr(self, 'history'):
-            train_columns = [key for key in kwargs['train_metrics'].keys()]
+            train_columns = list(kwargs['train_metrics'].keys())
             val_columns = ['val_'+key for key in kwargs['val_metrics'].keys()]
             self.ordered_metrics_keys = train_columns + val_columns
             self.history = pd.DataFrame(columns=self.ordered_metrics_keys)
