@@ -74,8 +74,6 @@ class SamePadding(nn.Module):
 '''
 
 class Add(nn.Module):
-    def __init__(self):
-        super(Add, self).__init__()
 
     def forward(self, x):
         return sum(x)
