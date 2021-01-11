@@ -17,8 +17,7 @@ class Events(Enum):
 
 
 class StopTrainingError(Exception):
-    def __init__(self):
-        pass
+    pass
 
 @torch.no_grad()
 def calc_metrics(y_pred, y_true, metrics_dic: OrderedDict):

@@ -12,7 +12,7 @@ class Callback():
 
 def _guess_auto_mode(monitor, mode) -> str:
     if mode != 'auto':
-        assert mode == 'max' or mode == 'min'
+        assert mode in ('max', 'min')
         return mode
     for s in ['loss', 'mse', 'mae', 'mape', 'error', 'err']:
         if s in monitor:
