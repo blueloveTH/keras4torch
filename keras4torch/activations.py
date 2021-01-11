@@ -15,8 +15,6 @@ class Mish(nn.Module):
 
     + https://github.com/digantamisra98/Mish
     """
-    def __init__(self):
-        super(Mish, self).__init__()
     
     def forward(self, x):
         return x * torch.tanh(F.softplus(x))

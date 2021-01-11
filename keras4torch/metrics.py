@@ -12,8 +12,6 @@ class Metric():
         pass
 
 class Accuracy(Metric):
-    def __init__(self) -> None:
-        super(Accuracy, self).__init__()
 
     def __call__(self, y_pred, y_true):
         if y_pred.shape[-1] == 1 or y_pred.dim() == 1:
@@ -80,8 +78,6 @@ class F1_Score(SklearnMetric):
 # For Regression
 
 class MeanSquaredError(Metric):
-    def __init__(self) -> None:
-        super(MeanSquaredError, self).__init__()
 
     def __call__(self, y_pred, y_true):
         return F.mse_loss(y_pred, y_true)
@@ -90,8 +86,6 @@ class MeanSquaredError(Metric):
         return 'mse'
 
 class MeanAbsoluteError(Metric):
-    def __init__(self) -> None:
-        super(MeanAbsoluteError, self).__init__()
 
     def __call__(self, y_pred, y_true):
         return F.l1_loss(y_pred, y_true)
@@ -100,8 +94,6 @@ class MeanAbsoluteError(Metric):
         return 'mae'
 
 class RootMeanSquaredError(Metric):
-    def __init__(self) -> None:
-        super(RootMeanSquaredError, self).__init__()
 
     def __call__(self, y_pred, y_true):
         return torch.sqrt(F.mse_loss(y_pred, y_true))
