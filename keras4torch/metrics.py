@@ -141,7 +141,7 @@ def _to_metrics_dic(metrics):
             tmp_m = _create_metric(tmp_m)
             if isinstance(tmp_m, Metric):
                 m[tmp_m.get_abbr()] = tmp_m
-            elif hasattr(tmp_m, '__call__'):
+            elif callable(tmp_m):
                 m[tmp_m.__name__] = tmp_m
             else:
                 raise TypeError('Unsupported type.')
