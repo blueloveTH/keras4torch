@@ -1,6 +1,15 @@
 from torch.utils.data import Dataset
 
 class SlicedDataset(Dataset):
+    """
+    Create a sliced dataset. It just keeps a reference of `array` thus can avoid memory copy.
+
+    Args:
+
+    * `slice` (1D-array or list): The slice sequence.
+
+    * `array` (`ndarray` or `torch.Tensor`): Your data.
+    """
     def __init__(self, slice, *array):
         super(SlicedDataset, self).__init__()
         self.array = array
