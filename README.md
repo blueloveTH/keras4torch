@@ -29,8 +29,9 @@
 ---
 
 <p align="center">
-    <h4 align="center">Use <code>keras4torch</code> for kaggle code competition! Check this <a href="https://www.kaggle.com/blueloveth/keras4torch">offline dataset</a> and <a href="https://www.kaggle.com/blueloveth/keras4torch-starter">starter notebook.</a></h4>
+    <h4 align="center">Use <code>keras4torch</code> for Kaggle's code competition! Check this <a href="https://www.kaggle.com/blueloveth/keras4torch">package dataset</a> and <a href="https://www.kaggle.com/blueloveth/keras4torch-starter">starter notebook.</a></h4>
 </p>
+
 
 ---
 
