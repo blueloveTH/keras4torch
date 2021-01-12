@@ -6,7 +6,6 @@
 
 +   Help people who are new to PyTorch but familar with Keras
 +   Reduce the cost for migrating Keras model implementation to PyTorch
-+   Enable Keras users to test PyTorch model via their familar pipeline
 
 
 
