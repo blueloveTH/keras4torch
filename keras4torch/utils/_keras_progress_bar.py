@@ -1,6 +1,7 @@
 import sys
 import time
 import os
+import numpy as np
 
 class Progbar(object):
     def __init__(self, target, width=30, interval=0.05):
