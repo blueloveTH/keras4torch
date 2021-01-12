@@ -3,7 +3,7 @@ import time
 import pandas as pd
 from enum import Enum
 from collections import OrderedDict
-from .utils import Progbar
+from .utils._keras_progress_bar import Progbar
 
 from copy import deepcopy
 
