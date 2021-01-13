@@ -31,7 +31,7 @@ class Progbar(object):
         else:
             sys.stdout.write('\n')
 
-    def update(self, current, avg_batch_metrics={}, finalize=None):
+    def update(self, current, avg_batch_metrics=None, finalize=None):
 
         if current >= self.target and finalize is None:
             finalize = True
@@ -80,7 +80,7 @@ class Progbar(object):
 
             info = ' - ETA: %s' % eta_format
 
-            if avg_batch_metrics:
+            if avg_batch_metrics is not None:
                 info += ' - ' + ' - '.join(['{}: {:.4f}'.format(k, v) for k,v in avg_batch_metrics.items()])
 
             self._total_width += len(info)

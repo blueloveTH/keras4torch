@@ -123,7 +123,7 @@ class Model(torch.nn.Module):
 
     def fit_dl(self, train_loader, val_loader=None,
                 epochs=10,
-                callbacks=[],
+                callbacks=None,
                 verbose=1,
                 use_amp=False,
                 accum_grad_steps=1):
@@ -139,7 +139,7 @@ class Model(torch.nn.Module):
                 validation_batch_size=None,
                 validation_split=None, shuffle_val_split=True,
                 validation_data=None,
-                callbacks=[],
+                callbacks=None,
                 verbose=1,
                 shuffle=True,
                 sample_weight=None,

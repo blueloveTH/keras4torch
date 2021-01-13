@@ -85,6 +85,9 @@ class Trainer(object):
     def register_callbacks(self, callbacks):
         self.event_dict = {Events(k).value: [] for k in Events}
 
+        if callbacks is None:
+            return
+
         if not isinstance(callbacks, list):
             callbacks = [callbacks]
         for c in callbacks:
