@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from abc import abstractclassmethod
 
-from ._util_layers import *
+from ._util_layers import Lambda
 
 
 class KerasLayer(nn.Module):
