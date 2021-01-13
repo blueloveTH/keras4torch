@@ -1,6 +1,5 @@
 class TrainerLoopConfig():
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.train = None
 
     def process_batch(self, x_batch, y_batch):

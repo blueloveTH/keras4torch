@@ -7,9 +7,8 @@ You need to subclass `k4t.configs.TrainerLoopConfig` and overwrite one or severa
 Then pass a instance to `Model.compile(..., loop_config)`
 
 ```python
-class TrainerLoopConfig(object):
-    def __init__(self) -> None:
-        super().__init__()
+class TrainerLoopConfig():
+    def __init__(self):
         self.train = None
 
     def process_batch(self, x_batch, y_batch):
