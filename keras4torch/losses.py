@@ -13,7 +13,7 @@ _losses_dict = OrderedDict({
 
 import torch.nn.functional as F
 
-class CELoss(object):
+class CELoss():
     def __init__(self, label_smoothing=0.0, class_weight=None, reduction='mean'):
         self.label_smoothing = label_smoothing
         self.reduction = reduction

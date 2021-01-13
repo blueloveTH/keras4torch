@@ -74,7 +74,7 @@ class MetricsRecorder():
         return metrics
 
 
-class Trainer(object):
+class Trainer():
     def __init__(self, **kwargs) -> None:
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -198,7 +198,7 @@ class Trainer(object):
         return metrics_rec.average()
 
 
-class Logger(object):
+class Logger():
     def __init__(self, trainer, verbose):
         self.trainer = trainer
         self.verbose = verbose

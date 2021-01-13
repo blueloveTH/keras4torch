@@ -1,4 +1,4 @@
-class TrainerLoopConfig(object):
+class TrainerLoopConfig():
     def __init__(self) -> None:
         super().__init__()
         self.train = None

@@ -188,7 +188,7 @@ class Model(torch.nn.Module):
         self.load_state_dict(torch.load(filepath))
 
 
-class Trainer(object):
+class Trainer():
     def __init__(self, **kwargs) -> None:
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -245,7 +245,7 @@ class Trainer(object):
         return self.__calc_metrics(torch.cat(y_pred), torch.cat(y_true))
 
 
-class Logger(object):
+class Logger():
     def __init__(self, trainer):
         self.trainer = trainer
 
