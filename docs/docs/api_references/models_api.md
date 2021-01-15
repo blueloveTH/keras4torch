@@ -30,7 +30,7 @@ Train the model for a fixed number of epochs (iterations on a dataset).
 + `validation_batch_size` (int, default=None): Number of samples for each step on validation loop, if `None` will use `batch_size`
 + `validation_split` (float between 0 and 1): Fraction of the training data to be used as validation data
 + `shuffle_val_split` (bool, default=True): Whether to do shuffling when `validation_split` is provided
-+ `validation_data` (tuple of `x` and `y`): Data on which to evaluate the loss and any model metrics at the end of each epoch
++ `validation_data` (tuple of `x` and `y` or `Dataset`): Data on which to evaluate the loss and any model metrics at the end of each epoch
 + `callbacks` (list of `keras4torch.callbacks.Callback`): List of callbacks to apply during training
 + `verbose` (int, default=1): 0, 1, or 2. Verbosity mode. 0 = silent, 1 = normal, 2 = brief
 + `shuffle` (bool, default=True): Whether to shuffle the training data before each epoch

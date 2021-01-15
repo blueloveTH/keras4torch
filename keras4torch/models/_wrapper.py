@@ -166,7 +166,7 @@ class Model(torch.nn.Module):
 
         * `shuffle_val_split` (bool, default=True): Whether to do shuffling when `validation_split` is provided
 
-        * `validation_data` (tuple of `x` and `y`): Data on which to evaluate the loss and any model metrics at the end of each epoch
+        * `validation_data` (tuple of `x` and `y` or `Dataset`): Data on which to evaluate the loss and any model metrics at the end of each epoch
         
         * `callbacks` (list of `keras4torch.callbacks.Callback`): List of callbacks to apply during training
 
