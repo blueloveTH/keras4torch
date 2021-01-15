@@ -17,7 +17,7 @@ class KerasLayer(nn.Module):
         pass
 
     def forward(self, x):
-        if not self.module:
+        if self.module is None:
             self.module = self.build(x.shape)
             self.module._k4t_layer_tag = 0
         return self.module(x)
@@ -27,7 +27,7 @@ class KerasLayer(nn.Module):
         return self.module is not None
 
     def apply(self, fn):
-        if not self.module:
+        if self.module is None:
             raise AssertionError("This module hasn't been built yet.")
         return self.module.apply(fn)
 

@@ -4,6 +4,8 @@ import torch.nn as nn
 from copy import deepcopy
 import torch.nn.functional as F
 
+from .layers._keras_layers import Lambda
+
 
 class Mish(nn.Module):
     """
@@ -49,6 +51,8 @@ _activations_dict = OrderedDict({
     'sigmoid': nn.Sigmoid(),
     'mish': Mish(),
     'swish': Swish(),
+    'argmax': Lambda(lambda x: x.argmax(-1)),
+    'sigmoid_round': Lambda(lambda x: torch.round(torch.sigmoid(x)))
 })
 
 

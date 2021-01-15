@@ -4,9 +4,7 @@ import torch.nn as nn
 _losses_dict = OrderedDict({
     'mse': nn.MSELoss,
     'mae': nn.L1Loss,
-    'categorical_crossentropy': nn.CrossEntropyLoss,
     'ce_loss': nn.CrossEntropyLoss,
-    'binary_crossentropy': nn.BCEWithLogitsLoss,
     'bce_loss': nn.BCEWithLogitsLoss,
 })
 
