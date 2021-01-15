@@ -9,6 +9,7 @@ nav:
         - Callbacks API: api_references/callbacks_api.md
         - Metrics: api_references/metrics.md
         - Losses: api_references/losses.md
+        - Activations: api_references/activations.md
         - Utilities: api_references/utilities.md
     - Code Examples:
         - code_examples/001.md
