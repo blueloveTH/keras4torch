@@ -36,6 +36,7 @@ class ROC_AUC(Metric):
     See reference: https://www.kaggle.com/c/riiid-test-answer-prediction/discussion/208031
     """
     def __init__(self, activation=torch.sigmoid):
+        super(ROC_AUC, self).__init__()
         from scipy.stats import rankdata
         self.sort_fn = rankdata
         self.activation = activation
