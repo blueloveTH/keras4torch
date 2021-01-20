@@ -145,7 +145,8 @@ class Model(torch.nn.Module):
                 sample_weight=None,
                 num_workers=0,
                 use_amp=False,
-                accum_grad_steps=1
+                accum_grad_steps=1,
+                **dl_kwargs
                 ):
         """
         Train the model for a fixed number of epochs (iterations on a dataset).
@@ -181,6 +182,8 @@ class Model(torch.nn.Module):
         * `use_amp` (bool, default=False): Whether to use automatic mixed precision
 
         * `accum_grad_steps` (int, default=1): How many steps to update the model parameters
+
+        * `**dl_kwargs`: Extra keyword arguments for DataLoader
         """
 
         assert self.compiled
@@ -230,13 +233,13 @@ class Model(torch.nn.Module):
         if validation_batch_size is None:
             validation_batch_size = batch_size
 
-        train_loader = DataLoader(train_set, shuffle=shuffle, sampler=sampler, batch_size=batch_size, num_workers=num_workers)
-        val_loader = DataLoader(val_set, shuffle=False, batch_size=validation_batch_size, num_workers=num_workers) if has_val else None
+        train_loader = DataLoader(train_set, shuffle=shuffle, sampler=sampler, batch_size=batch_size, num_workers=num_workers, **dl_kwargs)
+        val_loader = DataLoader(val_set, shuffle=False, batch_size=validation_batch_size, num_workers=num_workers, **dl_kwargs) if has_val else None
 
         return self.fit_dl(train_loader, val_loader, epochs, callbacks, verbose, use_amp, accum_grad_steps)
 
     @torch.no_grad()
-    def evaluate(self, x, y=None, batch_size=32, num_workers=0, use_amp=False):
+    def evaluate(self, x, y=None, batch_size=32, num_workers=0, use_amp=False, **dl_kwargs):
         """Return the loss value & metrics values for the model in test mode.\n\n    Computation is done in batches."""
         if isinstance(x, Dataset):
             val_set = x
@@ -245,7 +248,7 @@ class Model(torch.nn.Module):
                 x = [x]
             x, y = to_tensor(x, y)
             val_set = TensorDataset(*x, y)
-        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
+        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers), **dl_kwargs)
         return self.evaluate_dl(val_loader, use_amp)
 
     @torch.no_grad()
@@ -285,7 +288,7 @@ class Model(torch.nn.Module):
         return outputs.cpu().numpy() if output_numpy else outputs
 
     @torch.no_grad()
-    def predict(self, x, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0, use_amp=False):
+    def predict(self, x, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0, use_amp=False, **dl_kwargs):
         """Generate output predictions for the input samples.\n\n    Computation is done in batches."""
         if isinstance(x, Dataset):
             test_set = x
@@ -293,7 +296,7 @@ class Model(torch.nn.Module):
             if not isinstance(x, list) and not isinstance(x, tuple):
                 x = [x]
             test_set = TensorDataset(*to_tensor(x))
-        data_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers))
+        data_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers), **dl_kwargs)
         return self.predict_dl(data_loader, device=device, output_numpy=output_numpy, activation=activation, use_amp=use_amp)
 
     def save_weights(self, filepath):

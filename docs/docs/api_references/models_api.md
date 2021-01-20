@@ -38,6 +38,7 @@ Train the model for a fixed number of epochs (iterations on a dataset).
 + `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
 + `use_amp` (bool, default=False): Whether to use automatic mixed precision
 + `accum_grad_steps` (int, default=1): How many steps to update the model parameters
++ `**dl_kwargs`: Extra keyword arguments for DataLoader
 
 #### `.evaluate(x, y, batch_size, ...)`
 
@@ -48,6 +49,7 @@ Return the loss value & metrics values for the model in test mode.
 + `batch_size` (int, default=32): Number of samples per batch
 + `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
 + `use_amp` (bool, default=False): Whether to use automatic mixed precision
++ `**dl_kwargs`: Extra keyword arguments for DataLoader
 
 #### `.predict(x, batch_size, ...)`
 
@@ -60,6 +62,7 @@ Generate output predictions for the input samples.
 + `activation` (Callable or str, default=None): Extra activation applied to the output tensor
 + `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
 + `use_amp` (bool, default=False): Whether to use automatic mixed precision
++ `**dl_kwargs`: Extra keyword arguments for DataLoader
 
 ## DataLoader workflow
 
