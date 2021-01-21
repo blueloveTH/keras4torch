@@ -73,20 +73,32 @@ class MetricsRecorder():
         metrics.update(self.average_epoch_metrics(free_memory))
         return metrics
 
-class AMPContext():
-    def __init__(self, enabled) -> None:
+class autocast():
+    """
+    https://github.com/pytorch/pytorch/blob/master/torch/cuda/amp/autocast_mode.py
+    """
+    def __init__(self, enabled, device) -> None:
         super().__init__()
-        self.enabled = enabled
+        self._enabled = enabled
+
         if enabled:
-            self.autocast = torch.cuda.amp.autocast()
+            assert device == 'cuda'
 
     def __enter__(self):
-        if self.enabled:
-            self.autocast.__enter__()
+        if not self._enabled:
+            return
+        self.prev = torch.is_autocast_enabled()
+        torch.set_autocast_enabled(self._enabled)
+        torch.autocast_increment_nesting()
 
     def __exit__(self, *args):
-        if self.enabled:
-            self.autocast.__exit__(*args)
+        if not self._enabled:
+            return
+        # Drop the cache when we exit to a nesting level that's outside any instance of autocast.
+        if torch.autocast_decrement_nesting() == 0:
+            torch.clear_autocast_cache()
+        torch.set_autocast_enabled(self.prev)
+        return False
 
 class Trainer():
     def __init__(self, **kwargs) -> None:
@@ -122,7 +134,7 @@ class Trainer():
         self.data_loaders = train_loader, val_loader
         self.max_epochs = max_epochs
         self.logger = Logger(self, verbose=verbose)
-        self.use_amp = use_amp if self.device == 'cuda' else False
+        self.use_amp = use_amp
         self.accum_grad_steps = accum_grad_steps
         
         self.logger.on_train_begin(train_loader, val_loader)
@@ -159,7 +171,6 @@ class Trainer():
                 grad_scaler.update()
             loss_backward = lambda loss: grad_scaler.scale(loss).backward()
         else:
-            grad_scaler = None
             optimizer_step = lambda: self.optimizer.step()
             loss_backward = lambda loss: loss.backward()
 
@@ -170,7 +181,7 @@ class Trainer():
             *x_batch, y_batch = [i.to(device=self.device) for i in batch]
             x_batch, y_batch = loop.process_batch(x_batch, y_batch)
             
-            with AMPContext(self.use_amp):
+            with autocast(self.use_amp, self.device):
                 y_batch_pred = loop.forward_call(self.model, x_batch)
                 loss = self.loss(y_batch_pred, y_batch)
                 loss = loss / self.accum_grad_steps
@@ -210,7 +221,7 @@ class Trainer():
             *x_batch, y_batch = [i.to(device=self.device) for i in batch]
             x_batch, y_batch = loop.process_batch(x_batch, y_batch)
 
-            with AMPContext(enabled=use_amp):
+            with autocast(use_amp, self.device):
                 y_batch_pred = loop.forward_call(self.model, x_batch)
 
             y_batch_pred = y_batch_pred.detach().float()

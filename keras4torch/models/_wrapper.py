@@ -6,7 +6,7 @@ from collections import OrderedDict
 from torch.utils.data.dataset import Dataset
 from .._summary import summary
 
-from .._training import Trainer, AMPContext
+from .._training import Trainer, autocast
 from ..layers import KerasLayer
 from ..metrics import _to_metrics_dic
 from ..losses import _create_loss
@@ -260,13 +260,14 @@ class Model(torch.nn.Module):
     @torch.no_grad()
     def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None, use_amp=False):
         self._check_keras_layer()
+
         if device is None:
             if self.compiled:
                 device = self.trainer.device
             else:
                 device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.eval().to(device=device)
-
+        
         activation = _create_activation(activation)
 
         outputs = []
@@ -277,7 +278,7 @@ class Model(torch.nn.Module):
             for i in range(len(batch)):
                 batch[i] = batch[i].to(device=device)
 
-            with AMPContext(enabled=use_amp):
+            with autocast(use_amp, device):
                 o = self(*batch)
                 outputs.append(o)
 
