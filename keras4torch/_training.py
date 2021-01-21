@@ -3,7 +3,7 @@ import time
 import pandas as pd
 from enum import Enum
 from collections import OrderedDict
-from .utils._keras_progress_bar import Progbar
+from .utils._keras_progress_bar import Progbar, _log_format
 
 from copy import deepcopy
 
@@ -82,7 +82,7 @@ class autocast():
         self._enabled = enabled
 
         if enabled:
-            assert device == 'cuda'
+            assert device == 'cuda', f"`use_amp=True` can be used for CUDA device only. While we got `device={device}`."
 
     def __enter__(self):
         if not self._enabled:
@@ -270,10 +270,7 @@ class Logger():
         self.metrics.update({('val_' + k): v for k, v in val_metrics.items()})
  
         for k, v in self.metrics.items():
-            if v > 1e-3:
-                content.append('{}: {:.4f}'.format(k, v))
-            else:
-                content.append('{}: {:.4e}'.format(k, v))
+            content.append(_log_format(k, v))
 
         self.metrics['lr'] = self.trainer.optimizer.param_groups[0]['lr']
         content.append('lr: {:.1e}'.format(self.metrics['lr']).replace('.0e', 'e'))

@@ -3,6 +3,12 @@ import time
 import os
 import numpy as np
 
+def _log_format(k, v):
+    if v > 1e-3:
+        return '{}: {:.4f}'.format(k, v)
+    else:
+        return '{}: {:.4e}'.format(k, v)
+
 class Progbar():
     def __init__(self, target, width=30, interval=0.05):
         self.target = target
@@ -80,8 +86,10 @@ class Progbar():
 
             info = ' - ETA: %s' % eta_format
 
+            
+
             if avg_batch_metrics is not None:
-                info += ' - ' + ' - '.join(['{}: {:.4f}'.format(k, v) for k,v in avg_batch_metrics.items()])
+                info += ' - ' + ' - '.join([_log_format(k, v) for k,v in avg_batch_metrics.items()])
 
             self._total_width += len(info)
             pad_count = prev_total_width - self._total_width
