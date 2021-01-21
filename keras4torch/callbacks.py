@@ -127,7 +127,7 @@ class LRScheduler(Callback):
 
 
 class LambdaCallback(Callback):
-    def __init__(self, on_epoch_begin=None, on_epoch_end=None, on_train_begin=None, on_train_end=None) -> None:
+    def __init__(self, on_epoch_begin=None, on_epoch_end=None, on_batch_begin=None, on_batch_end=None, on_train_begin=None, on_train_end=None) -> None:
         super(LambdaCallback, self).__init__()
 
         self.callbacks_dict = {}
@@ -140,6 +140,10 @@ class LambdaCallback(Callback):
             self.callbacks_dict.update({Events.ON_TRAIN_BEGIN: on_train_begin})
         if on_train_end:
             self.callbacks_dict.update({Events.ON_TRAIN_END: on_train_end})
+        if on_batch_begin:
+            self.callbacks_dict.update({Events.ON_BATCH_BEGIN: on_batch_begin})
+        if on_batch_end:
+            self.callbacks_dict.update({Events.ON_BATCH_END: on_batch_end})
 
     def get_callbacks_dict(self):
         return self.callbacks_dict

@@ -14,6 +14,8 @@ class Events(Enum):
     ON_EPOCH_BEGIN = 'on_epoch_begin'
     ON_TRAIN_BEGIN = 'on_train_begin'
     ON_TRAIN_END = 'on_train_end'
+    ON_BATCH_BEGIN = 'on_batch_begin'
+    ON_BATCH_END = 'on_batch_end'
 
 
 class StopTrainingError(Exception):
@@ -178,6 +180,7 @@ class Trainer():
 
         batch_idx, max_batch_idx = 0, len(data_loader)
         for batch in data_loader:
+            self.__fire_event(Events.ON_BATCH_BEGIN)
             *x_batch, y_batch = [i.to(device=self.device) for i in batch]
             x_batch, y_batch = loop.process_batch(x_batch, y_batch)
             
@@ -205,6 +208,7 @@ class Trainer():
 
             self.logger.on_batch_end(metrics_rec)
             batch_idx += 1
+            self.__fire_event(Events.ON_BATCH_END)
 
         return metrics_rec.average()
 
