@@ -73,6 +73,20 @@ class MetricsRecorder():
         metrics.update(self.average_epoch_metrics(free_memory))
         return metrics
 
+class AMPContext():
+    def __init__(self, enabled) -> None:
+        super().__init__()
+        self.enabled = enabled
+        if enabled:
+            self.autocast = torch.cuda.amp.autocast()
+
+    def __enter__(self):
+        if self.enabled:
+            self.autocast.__enter__()
+
+    def __exit__(self, *args):
+        if self.enabled:
+            self.autocast.__exit__(*args)
 
 class Trainer():
     def __init__(self, **kwargs) -> None:
@@ -101,7 +115,7 @@ class Trainer():
 
     def get_loop_config(self, train):
         loop = deepcopy(self.loop_config)
-        loop.train = train
+        loop._train = train
         return loop
 
     def run(self, train_loader, val_loader, max_epochs, verbose, use_amp, accum_grad_steps):
@@ -136,8 +150,18 @@ class Trainer():
     def train_on_epoch(self, data_loader):
         self.model.train()
         metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
-        grad_scaler = torch.cuda.amp.GradScaler(enabled=self.use_amp)
         loop = self.get_loop_config(train=True)
+
+        if self.use_amp:
+            grad_scaler = torch.cuda.amp.GradScaler()
+            def optimizer_step():
+                grad_scaler.step(self.optimizer)
+                grad_scaler.update()
+            loss_backward = lambda loss: grad_scaler.scale(loss).backward()
+        else:
+            grad_scaler = None
+            optimizer_step = lambda: self.optimizer.step()
+            loss_backward = lambda loss: loss.backward()
 
         self.optimizer.zero_grad()
 
@@ -146,12 +170,12 @@ class Trainer():
             *x_batch, y_batch = [i.to(device=self.device) for i in batch]
             x_batch, y_batch = loop.process_batch(x_batch, y_batch)
             
-            with torch.cuda.amp.autocast(enabled=self.use_amp):
+            with AMPContext(self.use_amp):
                 y_batch_pred = loop.forward_call(self.model, x_batch)
                 loss = self.loss(y_batch_pred, y_batch)
                 loss = loss / self.accum_grad_steps
 
-            grad_scaler.scale(loss).backward()
+            loss_backward(loss)
 
             # https://discuss.pytorch.org/t/pytorch-gradient-accumulation/55955
 
@@ -160,8 +184,7 @@ class Trainer():
 
             if _is_accum_end or _is_last_batch:
                 loop.prepare_for_optimizer_step(self.model)
-                grad_scaler.step(self.optimizer)
-                grad_scaler.update()
+                optimizer_step()
                 self.optimizer.zero_grad()
 
             y_batch_pred = y_batch_pred.detach().float()
@@ -187,7 +210,7 @@ class Trainer():
             *x_batch, y_batch = [i.to(device=self.device) for i in batch]
             x_batch, y_batch = loop.process_batch(x_batch, y_batch)
 
-            with torch.cuda.amp.autocast(enabled=use_amp):
+            with AMPContext(enabled=use_amp):
                 y_batch_pred = loop.forward_call(self.model, x_batch)
 
             y_batch_pred = y_batch_pred.detach().float()

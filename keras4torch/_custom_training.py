@@ -1,6 +1,10 @@
 class TrainerLoopConfig():
     def __init__(self):
-        self.train = None
+        self._train = None
+
+    @property
+    def training(self) -> bool:
+        return self._train
 
     def process_batch(self, x_batch, y_batch):
         return x_batch, y_batch

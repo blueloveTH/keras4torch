@@ -6,7 +6,7 @@ from collections import OrderedDict
 from torch.utils.data.dataset import Dataset
 from .._summary import summary
 
-from .._training import Trainer
+from .._training import Trainer, AMPContext
 from ..layers import KerasLayer
 from ..metrics import _to_metrics_dic
 from ..losses import _create_loss
@@ -198,6 +198,7 @@ class Model(torch.nn.Module):
             x, y = to_tensor(x, y)
             train_set = TensorDataset(*x, y)
         
+        val_set = None
         del x, y    # for preventing bugs
 
         if validation_data is not None:
@@ -276,7 +277,7 @@ class Model(torch.nn.Module):
             for i in range(len(batch)):
                 batch[i] = batch[i].to(device=device)
 
-            with torch.cuda.amp.autocast(enabled=use_amp):
+            with AMPContext(enabled=use_amp):
                 o = self(*batch)
                 outputs.append(o)
 
