@@ -49,6 +49,10 @@ class CustomCallback(k4t.callbacks.Callback):
         pass
     def on_epoch_end(self, trainer):
         pass
+    def on_batch_begin(self, trainer):
+        pass
+    def on_batch_end(self, trainer):
+        pass
     def on_train_begin(self, trainer):
         pass
     def on_train_end(self, trainer):
@@ -61,6 +65,8 @@ Or using `LambdaCallback`,
 LambdaCallback(
     on_epoch_begin=None,
     on_epoch_end=None,
+    on_batch_begin=None,
+    on_batch_end=None,
     on_train_begin=None,
     on_train_end=None
 )
