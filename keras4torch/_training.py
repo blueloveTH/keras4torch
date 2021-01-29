@@ -181,8 +181,8 @@ class Trainer():
         batch_idx, max_batch_idx = 0, len(data_loader)
         for batch in data_loader:
             self.__fire_event(Events.ON_BATCH_BEGIN)
-            *x_batch, y_batch = [i.to(device=self.device) for i in batch]
-            x_batch, y_batch = loop.process_batch(x_batch, y_batch)
+            batch = [i.to(device=self.device) for i in batch]
+            x_batch, y_batch = loop.process_batch(batch)
             
             with autocast(self.use_amp, self.device):
                 y_batch_pred = loop.forward_call(self.model, x_batch)
@@ -222,8 +222,8 @@ class Trainer():
         loop = self.get_loop_config(train=False)
  
         for batch in data_loader:
-            *x_batch, y_batch = [i.to(device=self.device) for i in batch]
-            x_batch, y_batch = loop.process_batch(x_batch, y_batch)
+            batch = [i.to(device=self.device) for i in batch]
+            x_batch, y_batch = loop.process_batch(batch)
 
             with autocast(use_amp, self.device):
                 y_batch_pred = loop.forward_call(self.model, x_batch)
