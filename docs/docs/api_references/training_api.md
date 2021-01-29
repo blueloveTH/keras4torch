@@ -8,11 +8,15 @@ Then pass a instance to `Model.compile(..., loop_config)`
 
 ```python
 class TrainerLoopConfig():
-	@property
+    def __init__(self):
+        self._train = None
+
+    @property
     def training(self) -> bool:
         return self._train
 
-    def process_batch(self, x_batch, y_batch):
+    def process_batch(self, batch):
+        *x_batch, y_batch = batch
         return x_batch, y_batch
 
     def forward_call(self, model, x_batch):
