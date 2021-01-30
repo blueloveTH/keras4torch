@@ -15,6 +15,7 @@ OrderedDict({
     'sigmoid': nn.Sigmoid(),
     'mish': Mish(),
     'swish': Swish(),
+    'gelu': nn.GELU(),
     'argmax': Lambda(lambda x: x.argmax(-1)),
     'sigmoid_round': Lambda(lambda x: torch.round(torch.sigmoid(x)))
 })
