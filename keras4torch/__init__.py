@@ -3,4 +3,4 @@ from . import layers, metrics, models, losses, activations, utils, callbacks, op
 from . import hub
 from . import configs
 
-__version__ = '1.1.4a2'
+__version__ = '1.1.4'
