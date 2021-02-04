@@ -64,9 +64,12 @@ class Model(torch.nn.Module):
 
         batch_shapes = [ [batch_size]+list(i) for i in input_shape]
         probe_inputs = [torch.zeros(size=sz).to(dtype=dt, device=device) for sz,dt in zip(batch_shapes, dtype)]
-        self.model(*probe_inputs)
 
-        self._probe_inputs = probe_inputs
+        _training_state = self.model.training
+        self.model.eval()(*probe_inputs)
+        self.model.train(_training_state)
+
+        self._probe_inputs = [i.cpu() for i in probe_inputs]
         self.built = True
         return self
 
@@ -83,7 +86,8 @@ class Model(torch.nn.Module):
         if device is None:
             device = self.trainer.device if self.compiled else 'cpu'
         
-        summary(self.model, self._probe_inputs, depth=depth, verbose=1, device=device)
+        probe_inputs = [i.to(device=device) for i in self._probe_inputs]
+        summary(self.model, probe_inputs, depth=depth, verbose=1, device=device)
 
     def compile(self, optimizer, loss, metrics=None, epoch_metrics=None, device=None, loop_config=None):
         """
