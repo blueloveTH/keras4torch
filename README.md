@@ -2,7 +2,7 @@
     <img src="imgs/keras4torch_logo.svg" alt="Keras4Torch" height=48>
 </p>
 <p align="center">
-    <strong>A Ready-to-Use Wrapper for Training PyTorch Models✨</strong>
+    <strong>A compatible-with-keras wrapper for training PyTorch models✨</strong>
 </p>
 <p align="center">
     <a href="https://pypi.python.org/pypi/keras4torch"><img src="https://img.shields.io/pypi/v/keras4torch.svg" alt="PyPI"></a>

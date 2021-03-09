@@ -1,6 +1,6 @@
 # Keras4Torch
 
-**A Ready-to-Use Wrapper for Training PyTorch Models✨**
+**A compatible-with-keras wrapper for training PyTorch models✨**
 
 `keras4torch` provides a high-level API to train PyTorch models compatible with Keras. This project is designed for beginner with these objectives: 
 

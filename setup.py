@@ -9,7 +9,7 @@ setuptools.setup(
     version=keras4torch.__version__,
     author="blueloveTH",
     author_email="blueloveTH@qq.com",
-    description="A Ready-to-Use Wrapper for Training PyTorch Models✨",
+    description="A compatible-with-keras wrapper for training PyTorch models✨",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/blueloveTH/keras4torch",
