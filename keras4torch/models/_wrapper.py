@@ -286,10 +286,11 @@ class Model(torch.nn.Module):
                 o = self(*batch)
                 outputs.append(o)
 
-        outputs = torch.cat(outputs, dim=0).float()
+        outputs = torch.cat(outputs, dim=0)
 
         if activation is not None:
-            outputs = activation(outputs)
+            with autocast(use_amp, device):
+                outputs = activation(outputs)
 
         return outputs.cpu().numpy() if output_numpy else outputs
 
