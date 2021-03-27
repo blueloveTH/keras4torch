@@ -29,10 +29,11 @@ def calc_metrics(y_pred, y_true, metrics_dic: OrderedDict):
     return metrics
 
 class MetricsRecorder():
-    def __init__(self, metrics, epoch_metrics) -> None:
+    def __init__(self, metrics, epoch_metrics, loop_config) -> None:
         self.metrics = metrics
         self.epoch_metrics = OrderedDict([(k+'#', v) for k,v in epoch_metrics.items()])
         self.has_epoch_metrics = len(self.epoch_metrics) > 0
+        self.loop = loop_config
 
         # for batch metrics
         self.accum_metrics = OrderedDict([(k, 0.0) for k in self.metrics.keys()])
@@ -45,8 +46,9 @@ class MetricsRecorder():
     def update(self, y_batch_pred, y_batch):
         self.__update_batch_metrics(y_batch_pred, y_batch)
         if self.has_epoch_metrics:
-            self.y_pred.append(y_batch_pred.cpu())
-            self.y_true.append(y_batch.cpu())
+            y_batch_pred, y_batch = self.loop.cache_for_epoch_metrics(y_batch_pred, y_batch)
+            self.y_pred.append(y_batch_pred)
+            self.y_true.append(y_batch)
 
     def __update_batch_metrics(self, y_batch_pred, y_batch):
         count = len(y_batch)
@@ -163,8 +165,12 @@ class Trainer():
 
     def train_on_epoch(self, data_loader):
         self.model.train()
-        metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
         loop = self.get_loop_config(train=True)
+
+        val_metrics = self.metrics.copy()
+        if ('val_loss' in self.metrics) and (self.metrics['val_loss'] is None):
+            del val_metrics['loss']
+        metrics_rec = MetricsRecorder(val_metrics, self.epoch_metrics, loop)
 
         if self.use_amp:
             grad_scaler = torch.cuda.amp.GradScaler()
@@ -217,9 +223,8 @@ class Trainer():
     @torch.no_grad()
     def valid_on_epoch(self, data_loader, use_amp):
         self.model.eval()
-        metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics)
-
         loop = self.get_loop_config(train=False)
+        metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics, loop)
  
         for batch in data_loader:
             batch = [i.to(device=self.device) for i in batch]

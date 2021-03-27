@@ -152,4 +152,13 @@ class LambdaCallback(Callback):
         return self.callbacks_dict
 
 
-__all__ = ['Callback', 'ModelCheckpoint', 'EarlyStopping', 'LRScheduler', 'LambdaCallback']
+class CSVLogger(Callback):
+    def __init__(self, filename) -> None:
+        super().__init__()
+        self.filename = filename
+
+    def on_epoch_end(self, trainer: Trainer):
+        trainer.logger.history.to_csv(self.filename)
+
+
+__all__ = ['Callback', 'ModelCheckpoint', 'EarlyStopping', 'LRScheduler', 'LambdaCallback', 'CSVLogger']

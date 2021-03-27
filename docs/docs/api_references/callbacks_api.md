@@ -34,6 +34,7 @@ The relevant methods of the callbacks will then be called at each stage of the t
 + EarlyStopping
 + LRScheduler
 + LambdaCallback
++ CSVLogger
 
 
 

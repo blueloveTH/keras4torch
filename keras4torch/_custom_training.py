@@ -19,5 +19,8 @@ class TrainerLoopConfig():
     def prepare_for_metrics_update(self, y_batch_pred, y_batch):
         return y_batch_pred, y_batch
 
+    def cache_for_epoch_metrics(self, y_batch_pred, y_batch):
+        return y_batch_pred.cpu(), y_batch.cpu()
+
 
 _default_trainer_loop_config = TrainerLoopConfig()
