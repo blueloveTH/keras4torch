@@ -89,7 +89,7 @@ class Model(torch.nn.Module):
         probe_inputs = [i.to(device=device) for i in self._probe_inputs]
         summary(self.model, probe_inputs, depth=depth, verbose=1, device=device)
 
-    def compile(self, optimizer, loss, metrics=None, epoch_metrics=None, device=None, loop_config=None):
+    def compile(self, optimizer, loss, metrics=None, epoch_metrics=None, device=None, loop_config=None, disable_val_loss=False):
         """
         Configure the model for training.
 
@@ -121,7 +121,7 @@ class Model(torch.nn.Module):
         epoch_metrics = _to_metrics_dic(epoch_metrics)
 
         self.to(device=device)
-        self.trainer = Trainer(model=self, optimizer=optimizer, loss=loss, metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device, loop_config=loop_config)
+        self.trainer = Trainer(model=self, optimizer=optimizer, loss=loss, metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device, loop_config=loop_config, disable_val_loss=disable_val_loss)
         self.compiled = True
 
 

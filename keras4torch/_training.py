@@ -166,11 +166,7 @@ class Trainer():
     def train_on_epoch(self, data_loader):
         self.model.train()
         loop = self.get_loop_config(train=True)
-
-        val_metrics = self.metrics.copy()
-        if ('val_loss' in self.metrics) and (self.metrics['val_loss'] is None):
-            del val_metrics['loss']
-        metrics_rec = MetricsRecorder(val_metrics, self.epoch_metrics, loop)
+        metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics, loop)
 
         if self.use_amp:
             grad_scaler = torch.cuda.amp.GradScaler()
@@ -224,7 +220,11 @@ class Trainer():
     def valid_on_epoch(self, data_loader, use_amp):
         self.model.eval()
         loop = self.get_loop_config(train=False)
-        metrics_rec = MetricsRecorder(self.metrics, self.epoch_metrics, loop)
+
+        val_metrics = self.metrics.copy()
+        if self.disable_val_loss:
+            del val_metrics['loss']
+        metrics_rec = MetricsRecorder(val_metrics, self.epoch_metrics, loop, )
  
         for batch in data_loader:
             batch = [i.to(device=self.device) for i in batch]
