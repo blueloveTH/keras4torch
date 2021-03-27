@@ -224,7 +224,7 @@ class Trainer():
         val_metrics = self.metrics.copy()
         if self.disable_val_loss:
             del val_metrics['loss']
-        metrics_rec = MetricsRecorder(val_metrics, self.epoch_metrics, loop, )
+        metrics_rec = MetricsRecorder(val_metrics, self.epoch_metrics, loop)
  
         for batch in data_loader:
             batch = [i.to(device=self.device) for i in batch]
