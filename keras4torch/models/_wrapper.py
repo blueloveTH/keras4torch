@@ -292,11 +292,11 @@ class Model(torch.nn.Module):
             with autocast(use_amp, device):
                 o = self(*batch)
                 o = activation(o)
-                outputs.append(o)
+                outputs.append(o.cpu())
 
         outputs = torch.cat(outputs, dim=0)
 
-        return outputs.cpu().numpy() if output_numpy else outputs
+        return outputs.numpy() if output_numpy else outputs
 
     @torch.no_grad()
     def predict(self, x, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0, use_amp=False, progress_bar=False, **dl_kwargs):
