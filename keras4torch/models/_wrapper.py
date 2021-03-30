@@ -262,7 +262,7 @@ class Model(torch.nn.Module):
         return dict(self.trainer.valid_on_epoch(data_loader, use_amp))
 
     @torch.no_grad()
-    def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None, use_amp=False):
+    def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None, use_amp=False, progress_bar=False):
         self._check_keras_layer()
 
         if device is None:
@@ -273,8 +273,15 @@ class Model(torch.nn.Module):
         self.eval().to(device=device)
         
         activation = _create_activation(activation)
+        if activation is None:
+            activation = lambda x: x
 
         outputs = []
+
+        if progress_bar:
+            from tqdm import tqdm
+            data_loader = tqdm(data_loader)
+
         for batch in data_loader:
             if not isinstance(batch, list):
                 batch = [batch]
@@ -284,18 +291,15 @@ class Model(torch.nn.Module):
 
             with autocast(use_amp, device):
                 o = self(*batch)
+                o = activation(o)
                 outputs.append(o)
 
         outputs = torch.cat(outputs, dim=0)
 
-        if activation is not None:
-            with autocast(use_amp, device):
-                outputs = activation(outputs)
-
         return outputs.cpu().numpy() if output_numpy else outputs
 
     @torch.no_grad()
-    def predict(self, x, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0, use_amp=False, **dl_kwargs):
+    def predict(self, x, batch_size=32, device=None, output_numpy=True, activation=None, num_workers=0, use_amp=False, progress_bar=False, **dl_kwargs):
         """Generate output predictions for the input samples.\n\n    Computation is done in batches."""
         if isinstance(x, Dataset):
             test_set = x
@@ -304,7 +308,7 @@ class Model(torch.nn.Module):
                 x = [x]
             test_set = TensorDataset(*to_tensor(x))
         data_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=_get_num_workers(num_workers), **dl_kwargs)
-        return self.predict_dl(data_loader, device=device, output_numpy=output_numpy, activation=activation, use_amp=use_amp)
+        return self.predict_dl(data_loader, device=device, output_numpy=output_numpy, activation=activation, use_amp=use_amp, progress_bar=progress_bar)
 
     def save_weights(self, filepath):
         """Equal to `torch.save(model.state_dict(), filepath)`."""
