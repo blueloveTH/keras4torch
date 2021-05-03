@@ -1,4 +1,5 @@
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, Sampler
+import torch
 
 class SlicedDataset(Dataset):
     """
@@ -22,4 +23,16 @@ class SlicedDataset(Dataset):
         index = self.slice[index]
         return [a[index] for a in self.array]
 
-__all__ = ['SlicedDataset']
+class RestrictedRandomSampler(Sampler):
+    def __init__(self, idx_list: list) -> None:
+        self.idx_list = idx_list
+
+    def __iter__(self):
+        for indices in self.idx_list:
+            for i in torch.randperm(len(indices)):
+                return indices[i]
+
+    def __len__(self):
+        return sum(map(len, self.idx_list))
+
+__all__ = ['SlicedDataset', 'RestrictedRandomSampler']
