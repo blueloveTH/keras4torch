@@ -24,15 +24,15 @@ class SlicedDataset(Dataset):
         return [a[index] for a in self.array]
 
 class RestrictedRandomSampler(Sampler):
-    def __init__(self, idx_list: list) -> None:
-        self.idx_list = idx_list
+    def __init__(self, cnt_list: list) -> None:
+        self.cnt_list = cnt_list
 
     def __iter__(self):
-        for indices in self.idx_list:
-            for i in torch.randperm(len(indices)):
-                return indices[i]
+        for cnt in self.cnt_list:
+            for i in torch.randperm(cnt):
+                return i
 
     def __len__(self):
-        return sum(map(len, self.idx_list))
+        return sum(self.cnt_list)
 
 __all__ = ['SlicedDataset', 'RestrictedRandomSampler']
