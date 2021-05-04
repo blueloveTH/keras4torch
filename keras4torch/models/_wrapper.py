@@ -228,17 +228,16 @@ class Model(torch.nn.Module):
 
         if sample_weight is not None:
             assert len(sample_weight) == len(train_set)
-            sampler = WeightedRandomSampler(sample_weight, len(sample_weight))
             shuffle = None
-        else:
-            sampler = None
+            assert 'sampler' not in dl_kwargs
+            dl_kwargs['sampler'] = WeightedRandomSampler(sample_weight, len(sample_weight))
         
         num_workers = _get_num_workers(num_workers)
 
         if validation_batch_size is None:
             validation_batch_size = batch_size
 
-        train_loader = DataLoader(train_set, shuffle=shuffle, sampler=sampler, batch_size=batch_size, num_workers=num_workers, **dl_kwargs)
+        train_loader = DataLoader(train_set, shuffle=shuffle, batch_size=batch_size, num_workers=num_workers, **dl_kwargs)
         val_loader = DataLoader(val_set, shuffle=False, batch_size=validation_batch_size, num_workers=num_workers, **dl_kwargs) if has_val else None
 
         return self.fit_dl(train_loader, val_loader, epochs, callbacks, verbose, use_amp, accum_grad_steps)
