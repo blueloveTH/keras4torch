@@ -29,8 +29,7 @@ class RestrictedRandomSampler(Sampler):
 
     def __iter__(self):
         for cnt in self.cnt_list:
-            for i in torch.randperm(cnt):
-                return i
+            yield from torch.randperm(cnt)
 
     def __len__(self):
         return sum(self.cnt_list)
