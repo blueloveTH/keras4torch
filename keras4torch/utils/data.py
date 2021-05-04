@@ -25,7 +25,7 @@ class SlicedDataset(Dataset):
 
 class RestrictedRandomSampler(Sampler):
     def __init__(self, cnt_list: list) -> None:
-        self.cnt_list = cnt_list
+        self.cnt_list = cnt_list.copy()
 
     def __iter__(self):
         for cnt in self.cnt_list:
