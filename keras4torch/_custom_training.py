@@ -6,6 +6,9 @@ class TrainerLoopConfig():
     def training(self) -> bool:
         return self._train
 
+    def on_epoch_begin(self):
+        pass
+
     def process_batch(self, batch):
         *x_batch, y_batch = batch
         return x_batch, y_batch

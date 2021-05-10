@@ -130,9 +130,9 @@ class Trainer():
             func(self)
 
     def get_loop_config(self, train):
-        loop = deepcopy(self.loop_config)
-        loop._train = train
-        return loop
+        self.loop_config._train = train
+        self.loop_config.on_epoch_begin()
+        return self.loop_config
 
     def run(self, train_loader, val_loader, max_epochs, verbose, use_amp, accum_grad_steps):
         self.data_loaders = train_loader, val_loader
