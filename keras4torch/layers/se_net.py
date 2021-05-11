@@ -3,18 +3,17 @@ import torch.nn as nn
 from ._keras_layers import Lambda, KerasLayer, Linear
 
 class _SqueezeAndExcitation1d(nn.Module):
-    def __init__(self, in_shape, reduction_ratio=16, channel_last=False):
+    def __init__(self, in_shape, reduction_ratio=16, attn_dim=1):
         super(_SqueezeAndExcitation1d, self).__init__()
 
-        C_dim = 2 if channel_last else 1
-        L_dim = 1 if channel_last else 2
-        C_in = in_shape[C_dim]
+        assert attn_dim == 1 or attn_dim == 2
+        self.attn_dim = attn_dim
 
         self.fc = nn.Sequential(
-            Lambda(lambda x: x.mean(dim=L_dim)),
-            Linear(C_in // reduction_ratio), nn.ReLU(),
-            Linear(C_in), nn.Sigmoid(),
-            Lambda(lambda x: x.unsqueeze(L_dim))
+            Lambda(lambda x: x.mean(dim=2-attn_dim)),
+            Linear(in_shape[attn_dim] // reduction_ratio), nn.ReLU(),
+            Linear(in_shape[attn_dim]), nn.Sigmoid(),
+            Lambda(lambda x: x.unsqueeze(2-attn_dim))
         )
     
     def forward(self, x):
@@ -31,9 +30,9 @@ class SqueezeAndExcitation1d(KerasLayer):
 
     * `reduction_ratio` (int, default=16)
 
-    * `channel_last` (bool, default=False)
+    * `attn_dim` (bool, default=2)
 
-    Input: [N, C_in, L_in] by default and [N, L_in, C_in] if `channel_last=True`
+    Input: [N, C_in, L_in] by default and [N, L_in, C_in] if `attn_dim=2`
 
     Output: The same with the input
 
