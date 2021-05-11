@@ -10,10 +10,10 @@ class _SqueezeAndExcitation1d(nn.Module):
         self.attn_dim = attn_dim
 
         self.fc = nn.Sequential(
-            Lambda(lambda x: x.mean(dim=2-attn_dim)),
+            Lambda(lambda x: x.mean(dim=2-attn_dim+1)),
             Linear(in_shape[attn_dim] // reduction_ratio), nn.ReLU(),
             Linear(in_shape[attn_dim]), nn.Sigmoid(),
-            Lambda(lambda x: x.unsqueeze(2-attn_dim))
+            Lambda(lambda x: x.unsqueeze(2-attn_dim+1))
         )
     
     def forward(self, x):
