@@ -16,11 +16,11 @@ class KerasLayer(nn.Module):
     def build(self, in_shape: torch.Size):
         pass
 
-    def forward(self, x):
+    def forward(self, x, *args, **kwargs):
         if self.module is None:
             self.module = self.build(x.shape)
             self.module._k4t_layer_tag = 0
-        return self.module(x)
+        return self.module(x, *args, **kwargs)
 
     @property
     def is_built(self):
