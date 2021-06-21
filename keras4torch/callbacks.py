@@ -19,7 +19,7 @@ def _guess_auto_mode(monitor, mode) -> str:
     for s in ['acc', 'auc', 'score']:
         if s in monitor:
             return 'max'
-    raise ValueError("Unknown monitor. Please specify `mode` for it manually (either 'min' or 'max').")
+    raise ValueError("Unknown monitor. Please specify `mode` manually (either 'min' or 'max').")
 
 class ModelCheckpoint(Callback):
     def __init__(self, filepath, monitor='val_loss', mode='auto', save_best_only=True, save_weights_only=True, verbose=0):

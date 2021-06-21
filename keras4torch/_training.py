@@ -183,7 +183,12 @@ class Trainer():
         batch_idx, max_batch_idx = 0, len(data_loader)
         for batch in data_loader:
             self.__fire_event(Events.ON_BATCH_BEGIN)
-            batch = [i.to(device=self.device) for i in batch]
+
+            if isinstance(batch, list):
+                batch = [i.to(device=self.device) for i in batch]
+            else:
+                batch = batch.to(device=self.device)
+
             x_batch, y_batch = loop.process_batch(batch)
             
             with autocast(self.use_amp, self.device):
@@ -227,7 +232,11 @@ class Trainer():
         metrics_rec = MetricsRecorder(val_metrics, self.epoch_metrics, loop)
  
         for batch in data_loader:
-            batch = [i.to(device=self.device) for i in batch]
+            if isinstance(batch, list):
+                batch = [i.to(device=self.device) for i in batch]
+            else:
+                batch = batch.to(device=self.device)
+
             x_batch, y_batch = loop.process_batch(batch)
 
             with autocast(use_amp, self.device):

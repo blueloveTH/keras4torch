@@ -4,7 +4,7 @@ import torch.nn as nn
 from copy import deepcopy
 import torch.nn.functional as F
 
-from .layers._keras_layers import Lambda
+from .layers import Lambda
 
 
 class Mish(nn.Module):

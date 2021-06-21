@@ -1,13 +1,12 @@
 import torch
 import numpy as np
-from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler, Subset
+from torch.utils.data import DataLoader, TensorDataset, Subset
 from collections import OrderedDict
 
 from torch.utils.data.dataset import Dataset
-from .._summary import summary
+from .._torchsummary import summary
 
 from .._training import Trainer, autocast
-from ..layers import KerasLayer
 from ..metrics import _to_metrics_dic
 from ..losses import _create_loss
 from ..optimizers import _create_optimizer
@@ -25,18 +24,8 @@ class Model(torch.nn.Module):
         super(Model, self).__init__()
         self._k4t_model_tag = 0
         assert not hasattr(model, '_k4t_model_tag')
-
         self.model = model
         self.compiled = False
-        self.built = False
-        self.input_shape = None
-
-        def dfs(m):
-            for child in m.children():
-                if isinstance(child, KerasLayer) or dfs(child):
-                    return True
-            return False
-        self._has_keras_layer = dfs(self)
 
     def forward(self, *args):
         return self.model(*args)
@@ -49,45 +38,11 @@ class Model(torch.nn.Module):
         """Return all trainable parameters of the model."""
         return filter(lambda p: p.requires_grad, self.parameters())
 
-    @torch.no_grad()
-    def build(self, input_shape, dtype=torch.float32, batch_size=8):
-        """Build the model when it contains `KerasLayer`."""
-        if isinstance(input_shape[0], int):
-            input_shape = [input_shape]
-
-        if not isinstance(dtype, list):
-            dtype = [dtype] * len(input_shape)
-
-        assert len(dtype) == len(input_shape)
-
-        device = self.trainer.device if self.compiled else 'cpu'
-
-        batch_shapes = [ [batch_size]+list(i) for i in input_shape]
-        probe_inputs = [torch.zeros(size=sz).to(dtype=dt, device=device) for sz,dt in zip(batch_shapes, dtype)]
-
-        _training_state = self.model.training
-        self.model.eval()(*probe_inputs)
-        self.model.train(_training_state)
-
-        self._probe_inputs = [i.cpu() for i in probe_inputs]
-        self.built = True
-        return self
-
-    def _check_keras_layer(self):
-        if self._has_keras_layer and not self.built:
-            raise AssertionError("You need to build the model via `.build()` before this operation. Because it contains `KerasLayer`.")
-
-    def summary(self, depth=3, device=None):
+    def summary(self, dummy_inputs, depth=3, device=None):
         """Print a string summary of the network."""
-        self._check_keras_layer()
-        if not self.built:
-            raise AssertionError('Build the model first before you call `.summary()`.')
-
         if device is None:
             device = self.trainer.device if self.compiled else 'cpu'
-        
-        probe_inputs = [i.to(device=device) for i in self._probe_inputs]
-        summary(self.model, probe_inputs, depth=depth, verbose=1, device=device)
+        summary(self.model, dummy_inputs, verbose=1, depth=depth, device=device)
 
     def compile(self, optimizer, loss, metrics=None, epoch_metrics=None, device=None, loop_config=None, disable_val_loss=False):
         """
@@ -108,7 +63,6 @@ class Model(torch.nn.Module):
         
         * `loop_config`: Optional `TrainerLoopConfig` object to customize training and validation loop
         """
-        self._check_keras_layer()
         if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
             
@@ -138,7 +92,6 @@ class Model(torch.nn.Module):
 
         return history
 
-
     def fit(self, x, y=None, epochs=10, batch_size=32,
                 validation_batch_size=None,
                 validation_split=None, shuffle_val_split=True,
@@ -146,7 +99,6 @@ class Model(torch.nn.Module):
                 callbacks=None,
                 verbose=1,
                 shuffle=True,
-                sample_weight=None,
                 num_workers=0,
                 use_amp=False,
                 accum_grad_steps=1,
@@ -180,8 +132,6 @@ class Model(torch.nn.Module):
 
         * `shuffle` (bool, default=True): Whether to shuffle the training data before each epoch
 
-        * `sample_weight` (list of floats): Optional weights for the training samples. If provided will enable `WeightedRandomSampler`
-        
         * `num_workers` (int, default=0): Workers of `DataLoader`. If `-1` will use `cpu_count() - 1` for multiprocessing
 
         * `use_amp` (bool, default=False): Whether to use automatic mixed precision
@@ -226,13 +176,6 @@ class Model(torch.nn.Module):
                 np.random.seed(1234567890)
                 np.random.shuffle(idx)
             train_set, val_set = Subset(train_set, idx[:-val_length]), Subset(train_set, idx[-val_length:])
-            if sample_weight is not None:
-                sample_weight = [sample_weight[i] for i in idx[:-val_length]]
-
-        if sample_weight is not None:
-            assert len(sample_weight) == len(train_set)
-            assert sampler is None
-            sampler = WeightedRandomSampler(sample_weight, len(sample_weight))
         
         num_workers = _get_num_workers(num_workers)
 
@@ -267,8 +210,6 @@ class Model(torch.nn.Module):
 
     @torch.no_grad()
     def predict_dl(self, data_loader, device=None, output_numpy=True, activation=None, use_amp=False, progress_bar=False):
-        self._check_keras_layer()
-
         if device is None:
             if self.compiled:
                 device = self.trainer.device
@@ -316,8 +257,8 @@ class Model(torch.nn.Module):
 
     def save_weights(self, filepath):
         """Equal to `torch.save(model.state_dict(), filepath)`."""
-        torch.save(self.state_dict(), filepath)
+        torch.save(self.model.state_dict(), filepath)
 
     def load_weights(self, filepath):
         """Equal to `model.load_state_dict(torch.load(filepath))`."""
-        self.load_state_dict(torch.load(filepath))
+        self.model.load_state_dict(torch.load(filepath))

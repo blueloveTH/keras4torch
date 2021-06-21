@@ -65,9 +65,21 @@ class ModelStatistics:
         )
         if self.input_size:
             summary_str += (
-                "Total mult-adds ({}): {:0.2f}\n".format(
+                "Total mult-adds ({}): {:0.2f}\n"
+                "{}\n"
+                "Input size (MB): {:0.2f}\n"
+                "Forward/backward pass size (MB): {:0.2f}\n"
+                "Params size (MB): {:0.2f}\n"
+                "Estimated Total Size (MB): {:0.2f}\n".format(
                     "G" if self.total_mult_adds >= 1e9 else "M",
                     self.to_readable(self.total_mult_adds),
+                    divider,
+                    self.to_bytes(self.total_input),
+                    self.to_bytes(self.total_output),
+                    self.to_bytes(self.total_params),
+                    self.to_bytes(
+                        self.total_input + self.total_output + self.total_params
+                    ),
                 )
             )
         summary_str += divider
